@@ -12,6 +12,11 @@ namespace PsiBar {
 		{};
 
 		inline std::string getName() { return m_ID; };
+
+#ifdef PSIBAR_DEBUG
+		std::string debugPrint();
+#endif 
+	
 	private:
 
 		std::string m_ID;
@@ -33,6 +38,8 @@ namespace PsiBar {
 			:m_ID{ ID }
 		{};
 
+		inline std::string getName() { return m_ID; };
+
 		inline void setPairy(Parity parity) { m_parity = parity; };
 		inline void	setIsScalar(bool isScalar) { m_isScalar = isScalar;  };
 		
@@ -41,7 +48,13 @@ namespace PsiBar {
 		bool isActingDerivation(const std::string& name);
 
 		inline DerTable getActingDerivations() { return m_actedDerList; };
-		
+
+
+#ifdef PSIBAR_DEBUG
+	protected:
+		std::string debugPrintBase();
+#endif 
+
 
 	private:
 		std::string m_ID;
@@ -64,6 +77,9 @@ namespace PsiBar {
 		{
 
 		};
+#ifdef PSIBAR_DEBUG
+		std::string debugPrint();
+#endif 
 
 	private:
 		//PropTable m_symbProp;

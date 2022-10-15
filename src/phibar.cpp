@@ -17,7 +17,7 @@ namespace PsiBar {
 	int defineNewSymbol(const std::string& name, Ref<Symbol>* symb, Parity parity, bool scalar)
 	{
 
-		if (gContext.symbolTable.find(name) == gContext.symbolTable.end()) {
+		if (gContext.symbolTable.find(name) != gContext.symbolTable.end()) {
 			return W_RESOURCE_DUPICATE;
 		};
 
@@ -26,7 +26,7 @@ namespace PsiBar {
 		syb->setIsScalar(scalar);
 		syb->setPairy(parity);
 
-		if (!symb) *symb = syb;
+		if (symb) *symb = syb;
 		gContext.symbolTable[name] = syb;
 
 		return _OK;
@@ -35,13 +35,13 @@ namespace PsiBar {
 	int defineNewDerivation(const std::string& name, Ref<Derivation>* der)
 	{
 
-		if (gContext.derivationTable.find(name) == gContext.derivationTable.end()) {
+		if (gContext.derivationTable.find(name) != gContext.derivationTable.end()) {
 			return W_RESOURCE_DUPICATE;
 		};
 
 		Ref<Derivation> derivation = CreateRef<Derivation>(name);
 
-		if (!der) *der = derivation;
+		if (der) *der = derivation;
 		gContext.derivationTable[name] = derivation;
 
 		return _OK;

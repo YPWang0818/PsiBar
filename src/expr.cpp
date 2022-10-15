@@ -31,4 +31,50 @@ namespace PsiBar {
 
 		return true;
 	}
+
+
+#ifdef PSIBAR_DEBUG
+
+	std::string Generator::debugPrintBase()
+	{
+
+		std::stringstream ss;
+
+		ss << "Parity: " << std::to_string((int)m_parity) << "\n";
+		ss << "Is scalar: " << std::to_string(m_isScalar) << "\n";
+
+		ss << "Acted derivation List: ";
+
+		for (auto d : m_actedDerList) {
+			ss << d.first << ",";
+		};
+		ss << "\n";
+
+		return ss.str();
+	};
+
+
+	std::string Derivation::debugPrint()
+	{
+
+		std::stringstream ss;
+
+		ss << "[DERIVATION] " << this->getName() << ":\n";
+	
+		return ss.str();
+	};
+
+
+	std::string Symbol::debugPrint()
+	{
+		std::stringstream ss;
+
+		ss << "[SYMBOL] " << this->getName() << ":\n";
+		ss << this->debugPrintBase();
+
+		return ss.str();
+	};
+
+
+#endif
 };

@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <sstream>
+
+#ifndef PSIBAR_DEBUG
+#define PSIBAR_DEBUG
+#endif
 
 namespace PsiBar {
 
@@ -34,6 +39,6 @@ namespace PsiBar {
 		W_RESOURCE_DUPICATE
 	};
 
-	
+
 
 };
