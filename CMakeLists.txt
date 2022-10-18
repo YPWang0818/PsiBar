@@ -1,13 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
-project(PHIBAR VERSION 0.1.0 LANGUAGES CXX C)
+project(PSIBAR VERSION 0.1.0 LANGUAGES CXX C)
 
 
 set(libsource 
     "src/expr.cpp"
     "src/expr.h"
     "src/util.h"
-    "src/phibar.cpp"
-    "src/phibar.h"
+    "src/psibar.cpp"
+    "src/psibar.h"
+    "src/logger.h"
+    "src/logger.cpp"
     )
 
 set(source
@@ -15,16 +17,16 @@ set(source
     "src/main.cpp"
 )
 
-add_executable(phibar ${source})
+add_executable(psibar ${source})
 
 if (UNIX)
-   target_compile_options(phibar PRIVATE -ggdb )
+   target_compile_options(psibar PRIVATE -ggdb )
 endif (UNIX)
 
-add_library(phibar_static ${libsource})
+add_library(psibar_static ${libsource})
 
 if (UNIX)
-   target_compile_options(phibar_static PRIVATE -ggdb )
+   target_compile_options(psibar_static PRIVATE -ggdb )
 endif (UNIX)
 
 

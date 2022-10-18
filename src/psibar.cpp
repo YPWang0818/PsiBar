@@ -2,22 +2,22 @@
 
 namespace PsiBar {
 
-	struct GlobalContext {
 
-		SymbTb symbolTable;
-		DerTb derivationTable;
-
-	} gContext;
+	
 
 	void init()
 	{
+		GlobalContext& gcontext = GlobalContext::getContext();
+		gcontext.symbolTable = CreateRef<SymbTb>();
+		gcontext.derivationTable = CreateRef<DerTb>();
+
 	};
 
 
 	int defineNewSymbol(const std::string& name, Ref<Symbol>* symb, Parity parity, bool scalar)
 	{
 
-		if (gContext.symbolTable.find(name) != gContext.symbolTable.end()) {
+		if (GET_SYMTB()->find(name) != GET_SYMTB()->end()) {
 			return W_RESOURCE_DUPICATE;
 		};
 
@@ -27,7 +27,7 @@ namespace PsiBar {
 		syb->setPairy(parity);
 
 		if (symb) *symb = syb;
-		gContext.symbolTable[name] = syb;
+		(*GET_SYMTB())[name] = syb;
 
 		return _OK;
 	}
@@ -35,14 +35,14 @@ namespace PsiBar {
 	int defineNewDerivation(const std::string& name, Ref<Derivation>* der)
 	{
 
-		if (gContext.derivationTable.find(name) != gContext.derivationTable.end()) {
+		if (GET_DERTB()->find(name) != GET_DERTB()->end()) {
 			return W_RESOURCE_DUPICATE;
 		};
 
 		Ref<Derivation> derivation = CreateRef<Derivation>(name);
 
 		if (der) *der = derivation;
-		gContext.derivationTable[name] = derivation;
+		(*GET_DERTB())[name] = derivation;
 
 		return _OK;
 	}
