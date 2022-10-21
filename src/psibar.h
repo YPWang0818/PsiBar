@@ -23,7 +23,7 @@ namespace PsiBar {
         Ref<DerTb> derivationTable;
 
 	private:
-		GlobalContext() = default;
+		GlobalContext();
 	
 	};
 

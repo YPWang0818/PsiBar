@@ -1,7 +1,8 @@
 #include <iostream>
 
 #include "src/expr.h"
-#include "src/phibar.h"
+#include "src/psibar.h"
+#include "src/logger.h"
 
 void main(int argc, char* argv[]) {
 
@@ -11,16 +12,16 @@ void main(int argc, char* argv[]) {
 	Ref<Derivation> d1;
 
 	if (defineNewSymbol("alpha", &s1, Parity::EVEN, true)) {
-		std::cout << "Cannot create symbol " << std::endl;
+		PSIBAR_ERR("Cannot create symbol %s", "alpha");
 	} else {
-		std::cout << s1->debugPrint() << std::endl;
+		PSIBAR_FATAL("%s", s1->debugPrint().c_str());
 	};
 
 	if (defineNewDerivation("X-der", &d1)) {
-		std::cout << "Cannot create derivation " << std::endl;
+		PSIBAR_ERR("Cannot create derivation %s", "X-der");
 	}
 	else {
-		std::cout << d1->debugPrint() << std::endl;
+		PSIBAR_WARN("%s", d1->debugPrint().c_str());
 	};
 	
 

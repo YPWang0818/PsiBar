@@ -1,19 +1,9 @@
-#include "phibar.h"
+#include "psibar.h"
 
 namespace PsiBar {
 
 
 	
-
-	void init()
-	{
-		GlobalContext& gcontext = GlobalContext::getContext();
-		gcontext.symbolTable = CreateRef<SymbTb>();
-		gcontext.derivationTable = CreateRef<DerTb>();
-
-	};
-
-
 	int defineNewSymbol(const std::string& name, Ref<Symbol>* symb, Parity parity, bool scalar)
 	{
 
@@ -45,6 +35,14 @@ namespace PsiBar {
 		(*GET_DERTB())[name] = derivation;
 
 		return _OK;
+	};
+
+
+	GlobalContext::GlobalContext()
+	{
+		
+		symbolTable = CreateRef<SymbTb>();
+		derivationTable = CreateRef<DerTb>();
 	}
 };
 

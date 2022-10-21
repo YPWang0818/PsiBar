@@ -1,5 +1,5 @@
 #include "util.h"
-#include "phibar.h"
+#include "psibar.h"
 
 using namespace PsiBar;
 

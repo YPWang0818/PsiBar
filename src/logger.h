@@ -19,7 +19,45 @@ namespace PsiBar {
 
 		template<typename ... Args>
 		void Log(ErrorLevel lvl, const std::string& fmt, const Args& ... arg) {
+
+			std::string banner;
+			std::string colorcode;
+
+			switch (lvl) {
+			case ErrorLevel::FATAL:
+				banner = "FATAL: ";
+				colorcode = "\x1b[1;31m"; //Bold red.
+				break;
+			case ErrorLevel::ERROR:
+				banner = "ERROR: "; 
+				colorcode = "\x1b[31m"; // Red.
+				break;
+			case ErrorLevel::WARN:
+				banner = "WARN: ";
+				colorcode = "\x1b[33m"; // Yellow.
+				break;
+			case ErrorLevel::INFO:
+				banner = "INFO: ";
+				colorcode = "\x1b[36m"; // Cyan.
+				break;
+			case ErrorLevel::TRACE:
+				banner = "TRACE: ";
+				colorcode = "\x1b[2;37m";// Dimmed White.
+				break;
+			
+			}
+
+	
+			if (m_fileHandle == stdout || m_fileHandle == stderr) {
+				std::fprintf(m_fileHandle, colorcode.c_str());
+			};
+
+			std::fprintf(m_fileHandle, banner.c_str());
 			std::fprintf(m_fileHandle, fmt.c_str(), arg ...);
+
+			if (m_fileHandle == stdout || m_fileHandle == stderr) {
+				std::fprintf(m_fileHandle, "\x1b[0m");
+			};
 		};
 	private:
 		

@@ -1,4 +1,4 @@
-#include "phibar.h"
+#include "psibar.h"
 #include "expr.h"
 
 namespace PsiBar {

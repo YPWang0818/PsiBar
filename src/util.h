@@ -13,6 +13,7 @@
 #define PSIBAR_DEBUG
 #endif
 
+
 namespace PsiBar {
 
 	template<typename T>
