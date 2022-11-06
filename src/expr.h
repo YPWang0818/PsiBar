@@ -85,4 +85,42 @@ namespace PsiBar {
 		//PropTable m_symbProp;
 	};
 
+	enum  ExprType {
+		NAT,
+		REAL,
+		GEN,
+		DERLIST,
+		EXPR
+	};
+
+	struct Expr;
+
+	typedef boost::container::vector<boost::tuple<Derivation, uint64_t>> DerivationList;
+	typedef boost::container::vector<Ref<Expr>> ExprList;
+	typedef Ref<Generator> GenRef;
+
+	struct Expr {
+
+		Expr(ExprType tag)
+			:tag{tag}
+		{
+			//ders{};
+		};
+
+
+		ExprType tag;
+
+		union {
+			ExprList exprs;
+			DerivationList ders;
+			GenRef gen;
+			int64_t nat;
+			double real;
+		};
+
+		~Expr() {
+		
+		};
+	};
+
 };

@@ -46,4 +46,35 @@ namespace PsiBar {
 		const std::string& name,
 		Ref<Derivation>* der = NULL );
 
+
+	
+	typedef ::boost::container::vector<Ref<Expr>>  ExprStack;
+
+	struct ExprParser {
+
+		//ExprParser(const std::string& src);
+
+		static int Parse(const std::string& src, Ref<Expr>& output);
+	private:
+		static int parseExpression(std::string_view src, std::size_t idx);
+		static int parseTag(std::string_view src, std::size_t idx);
+
+		static int flushStack();
+		static void push(Ref<Expr> gen);
+
+		static bool isTagGen(std::string_view tag);
+		static bool isTagNat(std::string_view tag);
+		static bool isTagReal(std::string_view tag);
+
+
+		inline static ExprStack m_stack;
+		inline static int m_bp, m_sp;
+
+	};
+
+
+
+
+
+
 }

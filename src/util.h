@@ -8,6 +8,12 @@
 #include <sstream>
 #include <cstdio>
 #include <functional>
+#include <string_view>
+#include <cctype>
+
+#include "boost/unordered_map.hpp"
+#include "boost/container/vector.hpp"
+#include "boost/tuple/tuple.hpp"
 
 #ifndef PSIBAR_DEBUG
 #define PSIBAR_DEBUG

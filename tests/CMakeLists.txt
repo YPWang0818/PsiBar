@@ -12,4 +12,6 @@ if (UNIX)
 endif (UNIX)
 
 target_include_directories(psibar_tests PRIVATE ${CMAKE_SOURCE_DIR})
+target_include_directories(psibar_tests PRIVATE ${Boost_INCLUDE_DIRS})
+
 target_link_libraries(psibar_tests PRIVATE psibar_static)

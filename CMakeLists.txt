@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(PSIBAR VERSION 0.1.0 LANGUAGES CXX C)
 
+set(CMAKE_CXX_STANDARD 20)
 
 set(libsource 
     "src/expr.cpp"
@@ -33,6 +34,7 @@ if (UNIX)
 endif (UNIX)
 
 add_library(psibar_static ${libsource})
+target_include_directories(psibar_static PRIVATE ${Boost_INCLUDE_DIRS})
 
 if (UNIX)
    target_compile_options(psibar_static PRIVATE -ggdb )
