@@ -10,6 +10,11 @@ namespace PsiBar {
 		Derivation(const std::string& name)
 			:m_ID{ name } 
 		{};
+		
+		Derivation(const std::string_view name)
+			:m_ID {name}
+		{
+		};
 
 		inline std::string getName() { return m_ID; };
 
@@ -89,15 +94,19 @@ namespace PsiBar {
 		NAT,
 		REAL,
 		GEN,
-		DERLIST,
-		EXPR
+		DER,
+		DERFACTOR,
+		EXPR,
+		TERM,
+		FACTOR
 	};
 
 	struct Expr;
 
-	typedef boost::container::vector<boost::tuple<Derivation, uint64_t>> DerivationList;
+
 	typedef boost::container::vector<Ref<Expr>> ExprList;
 	typedef Ref<Generator> GenRef;
+	typedef Ref<Derivation> DerRef;
 
 	struct Expr {
 
@@ -112,7 +121,7 @@ namespace PsiBar {
 
 		union {
 			ExprList exprs;
-			DerivationList ders;
+			DerRef der;
 			GenRef gen;
 			int64_t nat;
 			double real;
