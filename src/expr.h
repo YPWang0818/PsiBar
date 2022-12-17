@@ -36,12 +36,20 @@ namespace PsiBar {
 	};
 
 
+
+
+
+
 	class Generator {
 
 	public:
 		Generator(const std::string& ID)
 			:m_ID{ ID }
 		{};
+
+		Generator(std::string_view ID) 
+			:m_ID{ std::string{ID} }
+		{}
 
 		inline std::string getName() { return m_ID; };
 
@@ -73,15 +81,23 @@ namespace PsiBar {
 
 	};
 
+
+
+
+
 	class Symbol :public Generator {
 
 	public:
 
 		Symbol(const std::string& name)
 			: Generator{ name }
-		{
+		{};
 
-		};
+		Symbol(std::string_view name)
+			: Generator{ name }
+		{};
+
+
 #ifdef PSIBAR_DEBUG
 		std::string debugPrint();
 #endif 
@@ -90,18 +106,55 @@ namespace PsiBar {
 		//PropTable m_symbProp;
 	};
 
+
+	struct Expr;
+	typedef std::unordered_map<std::string, Ref<Expr> > ArgsTb;
+
+	class Function : public Generator {
+
+
+	public:
+		Function(const std::string& name)
+			: Generator{ name }
+		{};
+
+		Function(std::string_view name)
+			: Generator{ name }
+		{};
+
+
+		inline bool haveTag(std::string_view tag) { 
+
+			// Copying the string_view to string, not ideal...
+			 return (m_args.find(std::string{ tag }) ==  m_args.end() )? false: true;
+		};
+
+		inline ArgsTb args() { return m_args; };
+	
+
+#ifdef PSIBAR_DEBUG
+		std::string debugPrint();
+#endif 
+
+	private:
+		ArgsTb m_args;
+
+	};
+
+
+
+
+
 	enum  ExprType {
 		NAT,
 		REAL,
 		GEN,
-		DER,
+		//DER,
 		DERFACTOR,
 		EXPR,
 		TERM,
 		FACTOR
 	};
-
-	struct Expr;
 
 
 	typedef boost::container::vector<Ref<Expr>> ExprList;
@@ -112,17 +165,33 @@ namespace PsiBar {
 
 		Expr(ExprType tag)
 			:tag{tag}
-		{
-			//ders{};
-		};
+		{};
+
+		Expr(DerRef der, uint64_t pow) 
+			:tag{ ExprType::DERFACTOR }, derFactor{der, pow}
+		{};
+
+		Expr(GenRef gen)
+			:tag{ ExprType::GEN }, gen{gen}
+		{};
+
+		Expr(int64_t nat) 
+			:tag{ ExprType::NAT }, nat{ nat }
+		{};
+
+
+		Expr(double real)
+			:tag{ ExprType::REAL }, real{real }
+		{};
+
 
 
 		ExprType tag;
 
 		union {
 			ExprList exprs;
-			DerRef der;
-			GenRef gen;
+			boost::tuple<DerRef, uint64_t> derFactor;
+			GenRef gen = nullptr;
 			int64_t nat;
 			double real;
 		};

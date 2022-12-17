@@ -102,11 +102,11 @@ namespace PsiBar {
 
 			Ref<Expr> node = CreateRef<Expr>(ExprType::EXPR);
 			
-			createNode(node);
+			createNode(node); pop();
 			return;
 		}
 		else {
-			parseTerm(src);
+			parseTerm(src); pop();
 			return;
 		};
 
@@ -126,12 +126,12 @@ namespace PsiBar {
 
 			Ref<Expr> node = CreateRef<Expr>(ExprType::TERM);
 
-			createNode(node);
+			createNode(node); pop();
 			return;
 
 		}
 		else {
-			parseFactor(src);
+			parseFactor(src); pop();
 		};
 
 
@@ -150,7 +150,7 @@ namespace PsiBar {
 				parseGenerator(src);
 
 				Ref<Expr> node = CreateRef<Expr>(ExprType::GEN);
-				createNode(node);
+				createNode(node); pop();
 				return;
 
 
@@ -161,16 +161,16 @@ namespace PsiBar {
 				if (lookToken(src, 3) == "(") {
 
 					nextToken(src); parseExpression(src);  nextToken(src);
+					pop();
 					return;
 				};
 
 				if (lookToken(src, 3) == ":d") {
-					nextToken(src); while (nextToken(src) != ")") { parseDerFactor(src); };  nextToken(src);
-
-					Ref<Expr> node = CreateRef<Expr>(ExprType::FACTOR);
+					nextToken(src); while (nextToken(src) != "(") { parseDerFactor(src); };  nextToken(src);
 					parseGenerator(src);
 
-					createNode(node);
+					Ref<Expr> node = CreateRef<Expr>(ExprType::FACTOR);
+					createNode(node); 	pop();
 					return;
 				};
 
@@ -186,7 +186,7 @@ namespace PsiBar {
 
 			Ref<Expr> node = CreateRef<Expr>(ExprType::NAT);
 			node->nat = natTokenVal;
-			createNode(node);
+			createNode(node); 	pop();
 			return;
 
 		};
@@ -197,7 +197,7 @@ namespace PsiBar {
 
 			Ref<Expr> node = CreateRef<Expr>(ExprType::REAL);
 			node->real = realTokenVal;
-			createNode(node);
+			createNode(node);  pop();
 			return;
 		};
 
@@ -207,6 +207,41 @@ namespace PsiBar {
 
 	void ExprParser::parseGenerator(std::string_view src)
 	{
+
+		if (lookToken(src) != "(" || lookToken(src, 2) != "g:") { return; };  //Error 
+
+		// push(); // No need to do that here, since there is no extra states need to be saved on the stack.
+
+		nextToken(src); nextToken(src);
+
+
+		// Test to see if next token is a genarator. Since we don't know the generator type yet. Defer the creation 
+		// of the instnace later. 
+
+		if (!isId(lookToken(src))) { return; }; // Error.
+		std::string_view gentoken = nextToken(src);
+
+
+		// If the generator is a symbol.
+		if (lookToken(src) == ")") {
+			Ref<Symbol> gen = CreateRef<Symbol>(gentoken);
+			Ref<Expr> genexpr = CreateRef<Expr>(gen);
+			push(genexpr);
+
+			return;
+		};
+
+
+		//Otherwise the generator is a function.
+
+		Ref<Function> gen = CreateRef<Function>(gentoken);
+		while (lookToken(src) != ")") {
+			parseGenProp(src, gen);
+		}
+	
+		Ref<Expr> genexp = CreateRef<Expr>(gen);
+		push(genexp);
+
 		return;
 	};
 
@@ -215,38 +250,57 @@ namespace PsiBar {
 	{
 
 		if (lookToken(src) != "(" || lookToken(src, 2) != "d:") { return; };  //Error 
+
+		// push(); // No need to do that here, since there is no extra states need to be saved on the stack.
+
 		nextToken(src); nextToken(src);
 
-		
+
 		DerRef der;
-		Ref<Expr> derexp, derFactorExp, natexp = nullptr;
+		Ref<Expr> derFactorExp;
 
+		// Test to see if next token is a derivation. If true, construct a instnance of it.
 		if (isId(lookToken(src))) {
-
 			der = CreateRef<Derivation>(nextToken(src));
-			derexp = CreateRef<Expr>(ExprType::DER);
-			derexp->der = der;
 		}
 		else {
 			//error.
 		};
 
+		int64_t powval = 1;
 
-		int64_t natval = 0;
-		
-		if (isNat(nextToken(src), &natval) ) {
-			natexp = CreateRef<Expr>(ExprType::NAT);
-			natexp->nat = natval;
-		};
-		
-		
-		derFactorExp = CreateRef<Expr>(ExprType::DERFACTOR);
-		derFactorExp->exprs.push_back(derexp);
-		if(natexp) derFactorExp->exprs.push_back(natexp);
+		// See if the derivation expression has a power specifier. 
+		if (isNat(nextToken(src), &powval));
 
+
+		derFactorExp = CreateRef<Expr>(der, powval);
+
+		// The node is created manually here. 
 		push(derFactorExp);
 
 		return;
+	};
+
+	void ExprParser::parseGenProp(std::string_view src, Ref<Function> gen)
+	{
+		if (lookToken(src) != "(") return; //Error.
+		nextToken(src);
+
+		if (!isId(lookToken(src))) {
+			return; //Error.
+		};
+
+		if ( !(gen->haveTag(lookToken(src))) ) {
+			return; //Error.
+		};
+
+		parseExpression(src);
+		// Get the experssion just parsed and set it as  the value correspond to the argument.
+		gen->args()[std::string{ nextToken(src) }] = pop();
+
+		nextToken(src);
+
+
 	};
 
 	void ExprParser::parseTag(std::string_view tag){
@@ -265,10 +319,11 @@ namespace PsiBar {
 	{
 
 	}
-	void ExprParser::pop()
+
+	Ref<Expr> ExprParser::pop()
 	{
-	}
-	;
+		return nullptr;
+	};
 
 
 	bool ExprParser::isNat(std::string_view token, int64_t* value)

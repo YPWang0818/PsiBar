@@ -62,6 +62,7 @@ namespace PsiBar {
 		static void parseFactor(std::string_view src);
 		static void parseGenerator(std::string_view src);
 		static void parseDerFactor(std::string_view src);
+		static void parseGenProp(std::string_view src, Ref<Function> gen);
 
 
 		static void parseTag(std::string_view tag);
@@ -73,7 +74,7 @@ namespace PsiBar {
 
 		static void createNode(Ref<Expr> node);
 		static void push(Ref<Expr> gen = nullptr);
-		static void pop();
+		static Ref<Expr> pop();
 
 		static bool isNat(std::string_view token, int64_t* value = nullptr);
 		static bool isReal(std::string_view token, double* value = nullptr);
