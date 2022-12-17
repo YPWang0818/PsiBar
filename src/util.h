@@ -15,6 +15,7 @@
 #include "boost/unordered_map.hpp"
 #include "boost/container/vector.hpp"
 #include "boost/tuple/tuple.hpp"
+#include "boost/container/deque.hpp"
 
 #ifndef PSIBAR_DEBUG
 #define PSIBAR_DEBUG

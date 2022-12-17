@@ -50,39 +50,59 @@ namespace PsiBar {
 	int ExprParser::Parse(const std::string& src, Ref<Expr>& output)
 	{
 		m_stack.resize(0);
+		m_tokenBuffer.resize(0);
 		m_idx = 0;
 
-
 		std::string_view src_view{ src.c_str(), src.size() };
+
+		for (int i = 0; i < m_tokenBufferSz; i++) {
+			m_tokenBuffer.push_back(getToken(src_view));
+		};
+
+
 		parseExpression(src_view);
 
 		return 0;
 	};
 
+	std::string_view ExprParser::getToken(std::string_view src)
+	{
+		// End of file, return an empty token.
+		if (m_idx == src.size()) { return std::string_view(""); }; 
+
+
+		// Iterating over the spaces and comments.
+		for (m_idx; ( isspace(src[m_idx]) || src[m_idx] == ';' ) && m_idx < src.size(); m_idx++) {
+			if (src[m_idx] == ';') while (src[m_idx] != '\n' && m_idx < src.size()) m_idx++;
+		};
+
+		
+
+		// The token is the special character '(' and ')'. This is to prevent code such as "(+ " or "(variable)" to be
+		// identified as one token.
+		if (src[m_idx] == '(' || src[m_idx] == ')' ) {
+			return src.substr(m_idx, 1); 
+	
+		};
+
+
+		// The iterate through the token, which is deliminated by an isspace() character.
+		size_t forward = 0;
+		for (; !isspace(src[m_idx + forward]) && (m_idx + forward) < src.size(); forward++) {};
+		return src.substr(m_idx, forward);
+
+	}
+
 	std::string_view ExprParser::nextToken(std::string_view src)
 	{
-		std::string_view t = lookToken(src);
-		m_idx += t.size();
-
-		return t;
+		m_tokenBuffer.push_back(getToken(src));
+		return m_tokenBuffer.pop_front();
 	};
 
 	std::string_view ExprParser::lookToken(std::string_view src, std::size_t step)
 	{
-		
-
-		for (m_idx; (isspace(src[m_idx]) || src[m_idx] == ';') && m_idx < src.size(); m_idx++) {
-			if (src[m_idx] == ';') while (src[m_idx] != '\n' && m_idx < src.size()) m_idx++;
-		};
-		
-		size_t forward;
-
-		for (forward = m_idx; !isspace(src[forward]) && forward < src.size(); forward++) {};
-		
-		if (forward == src.size()) { return std::string_view(""); }; // End of file, return an empty token.
-		
-		return src.substr(m_idx, (forward - m_idx - 1));
-
+		// For effeciency, we don't check the bound here. ( Bad idea?)
+		return m_tokenBuffer[(step - 1)];
 	}
 
 
@@ -246,6 +266,29 @@ namespace PsiBar {
 	};
 
 
+	void ExprParser::parseGenProp(std::string_view src, Ref<Function> gen)
+	{
+		if (lookToken(src) != "(") return; //Error.
+		nextToken(src);
+
+		if (!isId(lookToken(src))) {
+			return; //Error.
+		};
+
+		if (!(gen->haveTag(lookToken(src)))) {
+			return; //Error.
+		};
+
+		parseExpression(src);
+		// Get the experssion just parsed and set it as  the value correspond to the argument.
+		gen->args()[std::string{ nextToken(src) }] = pop();
+
+		nextToken(src);
+
+
+	};
+
+
 	void  ExprParser::parseDerFactor(std::string_view src)
 	{
 
@@ -281,32 +324,7 @@ namespace PsiBar {
 		return;
 	};
 
-	void ExprParser::parseGenProp(std::string_view src, Ref<Function> gen)
-	{
-		if (lookToken(src) != "(") return; //Error.
-		nextToken(src);
-
-		if (!isId(lookToken(src))) {
-			return; //Error.
-		};
-
-		if ( !(gen->haveTag(lookToken(src))) ) {
-			return; //Error.
-		};
-
-		parseExpression(src);
-		// Get the experssion just parsed and set it as  the value correspond to the argument.
-		gen->args()[std::string{ nextToken(src) }] = pop();
-
-		nextToken(src);
-
-
-	};
-
-	void ExprParser::parseTag(std::string_view tag){
-
-		return;
-	};
+	
 
 
 	void ExprParser::createNode(Ref<Expr> node)
