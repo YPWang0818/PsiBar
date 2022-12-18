@@ -88,7 +88,7 @@ namespace PsiBar {
 
 
 		inline static ExprStack m_stack;
-		inline static boost::container::deqeue<string_view> m_tokenBuffer;
+		inline static boost::container::deque<std::string_view> m_tokenBuffer;
 
 		inline static size_t m_idx;
 

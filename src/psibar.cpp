@@ -96,7 +96,11 @@ namespace PsiBar {
 	std::string_view ExprParser::nextToken(std::string_view src)
 	{
 		m_tokenBuffer.push_back(getToken(src));
-		return m_tokenBuffer.pop_front();
+
+		std::string_view res = m_tokenBuffer.front();
+		m_tokenBuffer.pop_front();
+
+		return res;
 	};
 
 	std::string_view ExprParser::lookToken(std::string_view src, std::size_t step)
@@ -329,36 +333,74 @@ namespace PsiBar {
 
 	void ExprParser::createNode(Ref<Expr> node)
 	{
+		if (m_stack.empty()) return;
+		
+		while (m_stack.back() != nullptr) {
+			
+			node->exprs.push_back(m_stack.back());
+			m_stack.pop_back();
+		};
+
 		return;
 	};
 
 
 	void ExprParser::push(Ref<Expr> gen)
 	{
+		m_stack.push_back(gen);
 
 	}
 
 	Ref<Expr> ExprParser::pop()
 	{
-		return nullptr;
+		if(m_stack.empty()) return nullptr;
+		
+		Ref<Expr> res = m_stack.back();
+		m_stack.pop_back();
+
+		return res;
 	};
 
 
 	bool ExprParser::isNat(std::string_view token, int64_t* value)
 	{
-		return false;
+
+
+		// Should use regular expression in future when dealing with arbitrary percision integers. 
+
+		int64_t result, i;
+		std::scanf(std::string{ token }.c_str(), "%lli%lln", &i, &result);
+
+		// Only match if scanf consumes the whole token.
+		if (i != token.size()) { return false; };
+
+		*value = result;
+		return true;
 	};
 
 
 	bool ExprParser::isReal(std::string_view token, double* value)
 	{
-		return false;
-	}
+
+		int64_t i; double result;
+
+		std::scanf(std::string{ token }.c_str(), "%lg%lln", &i, &result);
+
+	
+		if (i != token.size()) { return false; };
+
+		*value = result;
+		return true;
+
+	};
+
+
 	bool ExprParser::isId(std::string_view token)
 	{
-		return false;
-	}
-	;
+		boost::regex idreg{ "[a-zA-Z_-][a-zA-Z0-9_-:]*" };
+
+		return boost::regex_match(std::string{token}, idreg);
+	};
 
 };
 

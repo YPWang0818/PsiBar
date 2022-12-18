@@ -16,6 +16,7 @@
 #include "boost/container/vector.hpp"
 #include "boost/tuple/tuple.hpp"
 #include "boost/container/deque.hpp"
+#include "boost/regex.hpp"
 
 #ifndef PSIBAR_DEBUG
 #define PSIBAR_DEBUG

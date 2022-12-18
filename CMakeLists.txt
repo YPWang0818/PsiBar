@@ -23,11 +23,12 @@ set(Boost_USE_DEBUG_LIBS        OFF)  # ignore debug libs and
 set(Boost_USE_RELEASE_LIBS       ON)  # only find release libs
 set(Boost_USE_MULTITHREADED      ON)
 
-find_package(Boost 1.36.0 REQUIRED)
+find_package(Boost 1.36.0 REQUIRED COMPONENTS regex )
 
 add_executable(psibar ${source})
 
 target_include_directories(psibar PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(psibar ${Boost_LIBRARIES} )
 
 if (UNIX)
    target_compile_options(psibar PRIVATE -ggdb )
@@ -35,6 +36,7 @@ endif (UNIX)
 
 add_library(psibar_static ${libsource})
 target_include_directories(psibar_static PRIVATE ${Boost_INCLUDE_DIRS})
+target_link_libraries(psibar_static ${Boost_LIBRARIES} )
 
 if (UNIX)
    target_compile_options(psibar_static PRIVATE -ggdb )
