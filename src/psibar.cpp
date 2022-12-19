@@ -47,11 +47,12 @@ namespace PsiBar {
 	}
 
 
-	int ExprParser::Parse(const std::string& src, Ref<Expr>& output)
+	Ref<Expr>  ExprParser::Parse(const std::string& src)
 	{
 		m_stack.resize(0);
 		m_tokenBuffer.resize(0);
 		m_idx = 0;
+		m_errorFlag = false;
 
 		std::string_view src_view{ src.c_str(), src.size() };
 
@@ -62,7 +63,9 @@ namespace PsiBar {
 
 		parseExpression(src_view);
 
-		return 0;
+		if (m_errorFlag) return nullptr;
+		return pop();
+
 	};
 
 	std::string_view ExprParser::getToken(std::string_view src)
@@ -116,6 +119,7 @@ namespace PsiBar {
 
 		if (lookToken(src) != "(") {
 
+			onError("No opening barcket.");
 			return; //error.
 		};
 
@@ -141,7 +145,9 @@ namespace PsiBar {
 	void ExprParser::parseTerm(std::string_view src) {
 
 
-		if (lookToken(src) != "(") { return; };
+		if (lookToken(src) != "(") { 
+			onError("No opening barcket.");
+			return; };
 
 		push(); // Push an empty expression on the stack to signal the start of the stack.
 
@@ -198,10 +204,10 @@ namespace PsiBar {
 					return;
 				};
 
-				//error.
+				onError("Invalid syntax.");
 			};
 
-			//error
+			onError("Invalid syntax.");
 
 		};
 
@@ -232,7 +238,9 @@ namespace PsiBar {
 	void ExprParser::parseGenerator(std::string_view src)
 	{
 
-		if (lookToken(src) != "(" || lookToken(src, 2) != "g:") { return; };  //Error 
+		if (lookToken(src) != "(" || lookToken(src, 2) != "g:") {
+			onError("Invalid generator syntax.");
+			return; };  //Error 
 
 		// push(); // No need to do that here, since there is no extra states need to be saved on the stack.
 
@@ -242,7 +250,13 @@ namespace PsiBar {
 		// Test to see if next token is a genarator. Since we don't know the generator type yet. Defer the creation 
 		// of the instnace later. 
 
-		if (!isId(lookToken(src))) { return; }; // Error.
+		if (!isId(lookToken(src))) {
+
+			onError("Invalid identifier.");
+			return; //Error.
+		};
+
+
 		std::string_view gentoken = nextToken(src);
 
 
@@ -272,16 +286,26 @@ namespace PsiBar {
 
 	void ExprParser::parseGenProp(std::string_view src, Ref<Function> gen)
 	{
-		if (lookToken(src) != "(") return; //Error.
+		if (lookToken(src) != "(") {
+
+			onError("No opening bracket.");
+
+			return; // Error.
+		} 
 		nextToken(src);
 
 		if (!isId(lookToken(src))) {
+
+			onError("Invalid identifier.");
 			return; //Error.
 		};
 
 		if (!(gen->haveTag(lookToken(src)))) {
+
+			onError("Generator properties dosn't exists.");
 			return; //Error.
 		};
+
 
 		parseExpression(src);
 		// Get the experssion just parsed and set it as  the value correspond to the argument.
@@ -296,7 +320,11 @@ namespace PsiBar {
 	void  ExprParser::parseDerFactor(std::string_view src)
 	{
 
-		if (lookToken(src) != "(" || lookToken(src, 2) != "d:") { return; };  //Error 
+		if (lookToken(src) != "(" || lookToken(src, 2) != "d:") { 
+			
+			onError("Invalid syntax for a derivation.");
+			return; 
+		};  
 
 		// push(); // No need to do that here, since there is no extra states need to be saved on the stack.
 
@@ -311,6 +339,7 @@ namespace PsiBar {
 			der = CreateRef<Derivation>(nextToken(src));
 		}
 		else {
+			onError("Invalid identifier for derivation.");
 			//error.
 		};
 
@@ -399,7 +428,18 @@ namespace PsiBar {
 	{
 		boost::regex idreg{ "[a-zA-Z_-][a-zA-Z0-9_-:]*" };
 
-		return boost::regex_match(std::string{token}, idreg);
+		return boost::regex_match(std::string{ token }, idreg);
+	};
+
+
+	void ExprParser::onError(std::string msg, ErrCallback callback)
+	{
+		if (callback) { callback(this); return; };
+
+		m_errorFlag = true;
+
+		PASIBAR_BREAK(msg);
+
 	};
 
 };

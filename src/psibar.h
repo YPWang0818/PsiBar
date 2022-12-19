@@ -50,50 +50,59 @@ namespace PsiBar {
 	
 	typedef ::boost::container::vector<Ref<Expr>>  ExprStack;
 
+	struct ExprParser;
+
+	typedef std::function<void(ExprParser*)> ErrCallback;
 
 
 	struct ExprParser {
 
 
-		static int Parse(const std::string& src, Ref<Expr>& output);
-	private:
+		Ref<Expr> Parse(const std::string& src);
 
 		// These functions implements a recursive decent parser. The side effect of each (except for one) function will
 		// result in the AST of the corresponding experssion being consturcted and put on top of the expression stack.
 
-		static void parseExpression(std::string_view src);
-		static void parseTerm(std::string_view src);
-		static void parseFactor(std::string_view src);
-		static void parseGenerator(std::string_view src);
-		static void parseDerFactor(std::string_view src);
+		void parseExpression(std::string_view src);
+		void parseTerm(std::string_view src);
+		void parseFactor(std::string_view src);
+		void parseGenerator(std::string_view src);
+		void parseDerFactor(std::string_view src);
 
 		// This function will push the expression parsed directly into the argument slot of gen. 
-		static void parseGenProp(std::string_view src, Ref<Function> gen); 
+		void parseGenProp(std::string_view src, Ref<Function> gen); 
 
 		// These function impelments a token stream from the source, which will be consumed by the recursive decent parser.
 	
-		static std::string_view nextToken(std::string_view src); // consume one token from the token buffer.
-		static std::string_view lookToken(std::string_view src, std::size_t step = 1); // Only look a the token buffer.
-		static std::string_view getToken(std::string_view src); // Actually find the next token from @src, and put in the button of the stack. 
+		std::string_view nextToken(std::string_view src); // consume one token from the token buffer.
+		std::string_view lookToken(std::string_view src, std::size_t step = 1); // Only look a the token buffer.
+		std::string_view getToken(std::string_view src); // Actually find the next token from @src, and put in the button of the stack. 
 
 
-		static void createNode(Ref<Expr> node);
-		static void push(Ref<Expr> gen = nullptr);
-		static Ref<Expr> pop();
+		void createNode(Ref<Expr> node);
+		void push(Ref<Expr> gen = nullptr);
+		Ref<Expr> pop();
 
-		static bool isNat(std::string_view token, int64_t* value = nullptr);
-		static bool isReal(std::string_view token, double* value = nullptr);
-		static bool isId(std::string_view token);
+		bool isNat(std::string_view token, int64_t* value = nullptr);
+		bool isReal(std::string_view token, double* value = nullptr);
+		bool isId(std::string_view token);
 		
 
+		
+		// If there is no callback function, the error message is printed and the program halts.
+		// Otherwise the callback is called and the error message is ignored. 
 
-		inline static ExprStack m_stack;
-		inline static boost::container::deque<std::string_view> m_tokenBuffer;
+		void onError(std::string msg, ErrCallback callback = nullptr);
 
-		inline static size_t m_idx;
 
-		inline static const size_t m_tokenBufferSz = 4;
-		inline static const size_t m_maxTagSz  = 128;
+		ExprStack m_stack;
+		boost::container::deque<std::string_view> m_tokenBuffer;
+		size_t m_idx;
+
+
+		const size_t m_tokenBufferSz = 4;
+		const size_t m_maxTagSz  = 128;
+		bool m_errorFlag = false;
 	};
 
 
