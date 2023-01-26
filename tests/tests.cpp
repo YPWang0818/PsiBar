@@ -4,8 +4,12 @@
 #include "src/psibar.h"
 #include "src/logger.h"
 
+#include "unitTests.h"
+
 void main(int argc, char* argv[]) {
 
+
+	/*
 	using namespace PsiBar;
 
 	Ref<Symbol> s1;
@@ -26,6 +30,8 @@ void main(int argc, char* argv[]) {
 	
 
 	//std::cout << "Hello phibar tests !" << std::endl;
+	*/
 
+	UnitTests::runAll(argc, argv);
 }
 

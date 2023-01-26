@@ -56,27 +56,38 @@ namespace PsiBar {
 
 
 	struct ExprParser {
+		
+		ExprParser() {
 
+
+			Reset();
+		}
+		
 
 		Ref<Expr> Parse(const std::string& src);
 
-		// These functions implements a recursive decent parser. The side effect of each (except for one) function will
-		// result in the AST of the corresponding experssion being consturcted and put on top of the expression stack.
 
-		void parseExpression(std::string_view src);
-		void parseTerm(std::string_view src);
-		void parseFactor(std::string_view src);
-		void parseGenerator(std::string_view src);
-		void parseDerFactor(std::string_view src);
+		/* Reset the parser to a state to parse a new source.This function is called in the beginning of parse.
+		 So one don't ususally need to rum them explicitly. */
+
+		void Reset();
+
+		/* These functions implements a recursive decent parser.The side effect of each(except for one) function  will result in the AST of the corresponding experssion being consturctedand put on top of the			expression stack. */
+
+		void parseExpression();
+		void parseTerm();
+		void parseFactor();
+		void parseGenerator();
+		void parseDerFactor();
 
 		// This function will push the expression parsed directly into the argument slot of gen. 
-		void parseGenProp(std::string_view src, Ref<Function> gen); 
+		void parseGenProp(Ref<Function> gen); 
 
 		// These function impelments a token stream from the source, which will be consumed by the recursive decent parser.
 	
-		std::string_view nextToken(std::string_view src); // consume one token from the token buffer.
-		std::string_view lookToken(std::string_view src, std::size_t step = 1); // Only look a the token buffer.
-		std::string_view getToken(std::string_view src); // Actually find the next token from @src, and put in the button of the stack. 
+		std::string_view nextToken(std::size_t count = 1); // consume one token from the token buffer. @count indicate the number of token consumed, but only the last token is returned.
+		std::string_view lookToken(std::size_t step = 1); // Only look at the token buffer. @step the number of tokens to look ahead.  
+		std::string_view getToken(); // Actually find the next @count tokens and put in the button of the token buffer stack.
 
 
 		void createNode(Ref<Expr> node);
@@ -95,6 +106,7 @@ namespace PsiBar {
 		void onError(std::string msg, ErrCallback callback = nullptr);
 
 
+		std::string_view m_srcView;
 		ExprStack m_stack;
 		boost::container::deque<std::string_view> m_tokenBuffer;
 		size_t m_idx;
@@ -103,6 +115,7 @@ namespace PsiBar {
 		const size_t m_tokenBufferSz = 4;
 		const size_t m_maxTagSz  = 128;
 		bool m_errorFlag = false;
+
 	};
 
 

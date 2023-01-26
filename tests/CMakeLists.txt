@@ -2,7 +2,9 @@ cmake_minimum_required(VERSION 3.16)
 project(TESTS VERSION 0.1.0 LANGUAGES CXX C)
 
 set(source 
-    "tests.cpp")
+    "tests.cpp"
+    "unitTests.cpp"
+    "unitTests.h")
 
 
 add_executable(psibar_tests ${source})

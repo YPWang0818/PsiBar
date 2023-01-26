@@ -49,92 +49,121 @@ namespace PsiBar {
 
 	Ref<Expr>  ExprParser::Parse(const std::string& src)
 	{
-		m_stack.resize(0);
-		m_tokenBuffer.resize(0);
-		m_idx = 0;
-		m_errorFlag = false;
+		Reset();
 
-		std::string_view src_view{ src.c_str(), src.size() };
+		m_srcView = std::string_view{ src.c_str(), src.size() };
 
 		for (int i = 0; i < m_tokenBufferSz; i++) {
-			m_tokenBuffer.push_back(getToken(src_view));
+			m_tokenBuffer.push_back(getToken());
 		};
 
 
-		parseExpression(src_view);
+		parseExpression();
 
 		if (m_errorFlag) return nullptr;
 		return pop();
 
 	};
 
-	std::string_view ExprParser::getToken(std::string_view src)
+	void ExprParser::Reset()
 	{
-		// End of file, return an empty token.
-		if (m_idx == src.size()) { return std::string_view(""); }; 
+		m_srcView = std::string_view{ nullptr, 0 };
+		m_stack.clear();
+		m_tokenBuffer.clear();
+		m_idx = 0;
+		m_errorFlag = false;
+	};
 
-
+	std::string_view ExprParser::getToken()
+	{
 		// Iterating over the spaces and comments.
-		for (m_idx; ( isspace(src[m_idx]) || src[m_idx] == ';' ) && m_idx < src.size(); m_idx++) {
-			if (src[m_idx] == ';') while (src[m_idx] != '\n' && m_idx < src.size()) m_idx++;
+		for (; m_idx < m_srcView.size() && (isspace(m_srcView[m_idx]) || m_srcView[m_idx] == ';'); m_idx++) {
+			if (m_srcView[m_idx] == ';') while (m_idx < m_srcView.size() && m_srcView[m_idx] != '\n') {
+				m_idx++;
+			};
 		};
 
+
+		// End of file, return an empty token pointing to the end of the source.
+		if (m_idx >= m_srcView.size()) { return m_srcView.substr(m_srcView.size(), 0); };
+
+		std::string_view token;
 		
 
 		// The token is the special character '(' and ')'. This is to prevent code such as "(+ " or "(variable)" to be
 		// identified as one token.
-		if (src[m_idx] == '(' || src[m_idx] == ')' ) {
-			return src.substr(m_idx, 1); 
+		if (m_srcView[m_idx] == '(' || m_srcView[m_idx] == ')' ) {
+
+			token = m_srcView.substr(m_idx, 1); m_idx++;
+			return token;
 	
 		};
 
 
 		// The iterate through the token, which is deliminated by an isspace() character.
 		size_t forward = 0;
-		for (; !isspace(src[m_idx + forward]) && (m_idx + forward) < src.size(); forward++) {};
-		return src.substr(m_idx, forward);
+		for (;
+			( (m_idx + forward) < m_srcView.size() )	&&
+			!isspace(m_srcView[m_idx + forward])		&&
+			m_srcView[m_idx + forward] != '('			&& 
+			m_srcView[m_idx + forward] != ')'	// To avoid code such as +) registored as one token.
+			; forward++) { };
+
+		token = m_srcView.substr(m_idx, forward);
+		m_idx += forward;
+		return token;
 
 	}
 
-	std::string_view ExprParser::nextToken(std::string_view src)
+	std::string_view ExprParser::nextToken(std::size_t count)
 	{
-		m_tokenBuffer.push_back(getToken(src));
-
-		std::string_view res = m_tokenBuffer.front();
+		m_tokenBuffer.push_back(getToken());
+		std::string_view& res = m_tokenBuffer.front();
 		m_tokenBuffer.pop_front();
+
+		for (int c = 1; c < count; c++) {
+
+			m_tokenBuffer.push_back(getToken());
+			res  = m_tokenBuffer.front();
+			m_tokenBuffer.pop_front();
+		};
 
 		return res;
 	};
 
-	std::string_view ExprParser::lookToken(std::string_view src, std::size_t step)
+	std::string_view ExprParser::lookToken(std::size_t step)
 	{
 		// For effeciency, we don't check the bound here. ( Bad idea?)
+
+		
 		return m_tokenBuffer[(step - 1)];
 	}
 
 
 
-	void ExprParser::parseExpression(std::string_view src)
+	void ExprParser::parseExpression()
 	{
-
-		if (lookToken(src) != "(") {
-
-			onError("No opening barcket.");
-			return; //error.
-		};
 
 		push(); // Push an empty expression on the stack to signal the start of the stack.
 
-		if (lookToken(src) == "+") {
-			nextToken(src); while ( lookToken(src) != ")" ){  parseTerm(src); }; nextToken(src);
+		if (lookToken() != "(") {
+
+			pop();  parseFactor();
+			return;
+		};
+
+		if (lookToken(2) == "+") {
+			nextToken(2); while ( lookToken() != ")" ){  
+				parseTerm(); 
+			}; nextToken();
 
 			Ref<Expr> node = CreateRef<Expr>(ExprType::EXPR);
 			
-			createNode(node); pop();
+			createNode(node); 
 			return;
 		}
 		else {
-			parseTerm(src); pop();
+			pop();  parseTerm();
 			return;
 		};
 
@@ -142,26 +171,31 @@ namespace PsiBar {
 	
 	};
 
-	void ExprParser::parseTerm(std::string_view src) {
-
-
-		if (lookToken(src) != "(") { 
-			onError("No opening barcket.");
-			return; };
+	void ExprParser::parseTerm() {
 
 		push(); // Push an empty expression on the stack to signal the start of the stack.
 
-		if (lookToken(src) == "*") {
-			nextToken(src); while (nextToken(src) != ")") { parseFactor(src); }; nextToken(src);
+		if (lookToken() != "(") { 
+
+			pop();  parseFactor();
+			return; 
+		};
+
+	
+
+		if (lookToken(2) == "*") {
+			nextToken(2); while (lookToken() != ")") { 
+				parseFactor(); 
+			}; nextToken();
 
 			Ref<Expr> node = CreateRef<Expr>(ExprType::TERM);
 
-			createNode(node); pop();
+			createNode(node); 
 			return;
 
 		}
 		else {
-			parseFactor(src); pop();
+			pop();  parseFactor();
 		};
 
 
@@ -170,41 +204,36 @@ namespace PsiBar {
 
 
 
-	void ExprParser::parseFactor(std::string_view src)
+	void ExprParser::parseFactor()
 	{
 		push(); // Push an empty expression on the stack to signal the start of the stack.
 
-		if (lookToken(src) == "(") {
+		if (lookToken() == "(") {
 
-			if (lookToken(src, 2) == ":g") {
-				parseGenerator(src);
+			if (lookToken(2) == ":g") {
+				parseGenerator();
 
 				Ref<Expr> node = CreateRef<Expr>(ExprType::GEN);
-				createNode(node); pop();
+				createNode(node); 
 				return;
 
 
 			};
 
-			if (lookToken(src, 2) == "(") {
+			if (lookToken(2) == "(") {
 
-				if (lookToken(src, 3) == "(") {
-
-					nextToken(src); parseExpression(src);  nextToken(src);
-					pop();
-					return;
-				};
-
-				if (lookToken(src, 3) == ":d") {
-					nextToken(src); while (nextToken(src) != "(") { parseDerFactor(src); };  nextToken(src);
-					parseGenerator(src);
+				if (lookToken(3) == ":d") {
+					nextToken(); while (nextToken() != "(") { parseDerFactor(); };  nextToken();
+					parseGenerator();
 
 					Ref<Expr> node = CreateRef<Expr>(ExprType::FACTOR);
-					createNode(node); 	pop();
+					createNode(node); 
 					return;
 				};
 
-				onError("Invalid syntax.");
+				pop();
+				nextToken(); parseExpression();  nextToken();
+				return;
 			};
 
 			onError("Invalid syntax.");
@@ -212,56 +241,57 @@ namespace PsiBar {
 		};
 
 		int64_t natTokenVal = 0;
-		if (isNat(lookToken(src), &natTokenVal) ) {
-
+		if (isNat(lookToken(), &natTokenVal) ) {
+			nextToken();
 			Ref<Expr> node = CreateRef<Expr>(ExprType::NAT);
 			node->nat = natTokenVal;
-			createNode(node); 	pop();
+			createNode(node); 	
 			return;
 
 		};
 
 
 		double realTokenVal = 0;
-		if (isReal(lookToken(src), &realTokenVal)) {
-
+		if (isReal(lookToken(), &realTokenVal)) {
+			nextToken();
 			Ref<Expr> node = CreateRef<Expr>(ExprType::REAL);
 			node->real = realTokenVal;
-			createNode(node);  pop();
+			createNode(node);  
 			return;
 		};
 
-
+		onError("Invalid syntax.");
 		return;
 	};
 
-	void ExprParser::parseGenerator(std::string_view src)
+	void ExprParser::parseGenerator()
 	{
 
-		if (lookToken(src) != "(" || lookToken(src, 2) != "g:") {
+		if (lookToken() != "(" || lookToken(2) != "g:") {
 			onError("Invalid generator syntax.");
 			return; };  //Error 
 
 		// push(); // No need to do that here, since there is no extra states need to be saved on the stack.
 
-		nextToken(src); nextToken(src);
+		nextToken(); nextToken();
 
 
 		// Test to see if next token is a genarator. Since we don't know the generator type yet. Defer the creation 
 		// of the instnace later. 
 
-		if (!isId(lookToken(src))) {
+		if (!isId(lookToken())) {
 
 			onError("Invalid identifier.");
 			return; //Error.
 		};
 
 
-		std::string_view gentoken = nextToken(src);
+		std::string_view gentoken = nextToken();
 
 
 		// If the generator is a symbol.
-		if (lookToken(src) == ")") {
+		if (lookToken() == ")") {
+			nextToken();
 			Ref<Symbol> gen = CreateRef<Symbol>(gentoken);
 			Ref<Expr> genexpr = CreateRef<Expr>(gen);
 			push(genexpr);
@@ -273,10 +303,9 @@ namespace PsiBar {
 		//Otherwise the generator is a function.
 
 		Ref<Function> gen = CreateRef<Function>(gentoken);
-		while (lookToken(src) != ")") {
-			parseGenProp(src, gen);
-		}
-	
+		while (lookToken() != ")") {
+			parseGenProp(gen);
+		} nextToken();
 		Ref<Expr> genexp = CreateRef<Expr>(gen);
 		push(genexp);
 
@@ -284,43 +313,44 @@ namespace PsiBar {
 	};
 
 
-	void ExprParser::parseGenProp(std::string_view src, Ref<Function> gen)
+	void ExprParser::parseGenProp( Ref<Function> gen)
 	{
-		if (lookToken(src) != "(") {
+		if (lookToken() != "(") {
 
 			onError("No opening bracket.");
 
 			return; // Error.
-		} 
-		nextToken(src);
+		}  
+		
+		nextToken();
 
-		if (!isId(lookToken(src))) {
+		if (!isId(lookToken())) {
 
 			onError("Invalid identifier.");
 			return; //Error.
 		};
 
-		if (!(gen->haveTag(lookToken(src)))) {
+		if (!(gen->haveTag(lookToken()))) {
 
 			onError("Generator properties dosn't exists.");
 			return; //Error.
 		};
 
 
-		parseExpression(src);
+		parseExpression();
 		// Get the experssion just parsed and set it as  the value correspond to the argument.
-		gen->args()[std::string{ nextToken(src) }] = pop();
+		gen->args()[std::string{ nextToken() }] = pop();
 
-		nextToken(src);
+		nextToken();
 
 
 	};
 
 
-	void  ExprParser::parseDerFactor(std::string_view src)
+	void  ExprParser::parseDerFactor()
 	{
 
-		if (lookToken(src) != "(" || lookToken(src, 2) != "d:") { 
+		if (lookToken() != "(" || lookToken(2) != "d:") { 
 			
 			onError("Invalid syntax for a derivation.");
 			return; 
@@ -328,15 +358,15 @@ namespace PsiBar {
 
 		// push(); // No need to do that here, since there is no extra states need to be saved on the stack.
 
-		nextToken(src); nextToken(src);
+		nextToken(2);
 
 
 		DerRef der;
 		Ref<Expr> derFactorExp;
 
 		// Test to see if next token is a derivation. If true, construct a instnance of it.
-		if (isId(lookToken(src))) {
-			der = CreateRef<Derivation>(nextToken(src));
+		if (isId(lookToken())) {
+			der = CreateRef<Derivation>(nextToken());
 		}
 		else {
 			onError("Invalid identifier for derivation.");
@@ -346,7 +376,7 @@ namespace PsiBar {
 		int64_t powval = 1;
 
 		// See if the derivation expression has a power specifier. 
-		if (isNat(nextToken(src), &powval));
+		if (isNat(nextToken(), &powval));
 
 
 		derFactorExp = CreateRef<Expr>(der, powval);
@@ -369,7 +399,7 @@ namespace PsiBar {
 			node->exprs.push_back(m_stack.back());
 			m_stack.pop_back();
 		};
-
+		pop(); push(node);
 		return;
 	};
 
@@ -398,7 +428,7 @@ namespace PsiBar {
 		// Should use regular expression in future when dealing with arbitrary percision integers. 
 
 		int64_t result, i;
-		std::scanf(std::string{ token }.c_str(), "%lli%lln", &i, &result);
+		std::sscanf(std::string{ token }.c_str(), "%lli%lln", &result, &i);
 
 		// Only match if scanf consumes the whole token.
 		if (i != token.size()) { return false; };
@@ -413,7 +443,7 @@ namespace PsiBar {
 
 		int64_t i; double result;
 
-		std::scanf(std::string{ token }.c_str(), "%lg%lln", &i, &result);
+		std::sscanf(std::string{ token }.c_str(), "%lg%lln", &result, &i);
 
 	
 		if (i != token.size()) { return false; };

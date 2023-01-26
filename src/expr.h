@@ -165,8 +165,9 @@ namespace PsiBar {
 	struct Expr {
 
 		Expr(ExprType tag)
-			:tag{tag}
-		{};
+			:tag{ tag }, exprs()
+		{
+		}
 
 		Expr(DerRef der, uint64_t pow) 
 			:tag{ ExprType::DERFACTOR }, derFactor{der, pow}
@@ -190,12 +191,14 @@ namespace PsiBar {
 		ExprType tag;
 
 		union {
-			ExprList exprs;
 			boost::tuple<DerRef, uint64_t> derFactor;
+			ExprList exprs;
 			GenRef gen = nullptr;
 			int64_t nat;
 			double real;
 		};
+
+		
 
 		~Expr() {
 		
