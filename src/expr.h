@@ -65,6 +65,7 @@ namespace PsiBar {
 
 
 #ifdef PSIBAR_DEBUG
+		virtual std::string debugPrint();
 	protected:
 		std::string debugPrintBase();
 #endif 
@@ -100,7 +101,7 @@ namespace PsiBar {
 
 
 #ifdef PSIBAR_DEBUG
-		std::string debugPrint();
+		 std::string debugPrint() override;
 #endif 
 
 	private:
@@ -134,7 +135,7 @@ namespace PsiBar {
 	
 
 #ifdef PSIBAR_DEBUG
-		std::string debugPrint();
+		std::string debugPrint() override;
 #endif 
 
 	private:
@@ -198,11 +199,20 @@ namespace PsiBar {
 			double real;
 		};
 
-		
-
 		~Expr() {
-		
+
 		};
+
+
+#ifdef	PSIBAR_DEBUG
+		
+		std::string debugPrint(int indentLevel = 0);
+	private:
+
+		std::string debugPrintSubExpr(int indentLevel = 0);
+
+#endif
+
 	};
 
 };

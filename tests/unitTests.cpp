@@ -15,10 +15,10 @@ namespace UnitTests {
 		
 		static std::vector<std::string> testSrc = {
 			"(+ 1 1)",
-			"(+ 1 1); comments",
-			"(* 1 2)",
+			"(+ 23 343); comments",
+			"(* 1 22)",	
 			"(* 1.2 1e-5 )",
-			"((+ 1 1))"
+			"((+ 1.7 1))"
 		};
 
 
@@ -30,6 +30,7 @@ namespace UnitTests {
 		for (auto src : testSrc) {
 
 			result = testParser.Parse(src);
+			PSIBAR_INFO(result->debugPrint());
 			PSIBAR_ASSERT(result, "Parsing Error.");
 			// We will only test wether the parsing is sucessful and not validating the result. 
 			// Since the result will be complicated ASTs and are directly integrated to the symbol table.

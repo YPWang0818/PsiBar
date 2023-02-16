@@ -35,6 +35,11 @@ namespace PsiBar {
 
 #ifdef PSIBAR_DEBUG
 
+	std::string Generator::debugPrint()
+	{
+		return debugPrintBase();
+	}
+
 	std::string Generator::debugPrintBase()
 	{
 
@@ -76,6 +81,62 @@ namespace PsiBar {
 	};
 
 
+	std::string Expr::debugPrint(int indentLevel) {
+
+		std::stringstream ss; int lvl = indentLevel;
+		ss << std::string(lvl, '\t');
+
+		switch (tag) {
+		case ExprType::NAT:
+			ss  << "nat: " << nat;
+
+			break;
+		case ExprType::REAL:
+			ss << "real: " << real;
+
+			break;
+		case ExprType::GEN :
+			ss << "gen: " << gen->getName();
+
+			break;
+		case ExprType::DERFACTOR:
+			ss << "defactor: " << derFactor.get<1>() << " , " << derFactor.get<0>()->debugPrint();
+
+			break;
+		case ExprType::EXPR:
+			ss << "expr: " << debugPrintSubExpr();
+
+			break;
+		case ExprType::TERM:
+			ss << "term: " << debugPrintSubExpr();
+
+			break;
+		case ExprType::FACTOR:
+			ss << "factor: " << debugPrintSubExpr();
+
+			break;
+		};
+
+		return ss.str();
+	}
+	std::string Expr::debugPrintSubExpr(int indentLevel)
+	{
+		std::stringstream ss;
+		ss << "\n";
+
+		for (auto s : exprs) {
+			ss << s->debugPrint(indentLevel + 1) << "\n";
+		};
+
+		return ss.str();
+	};
+
+	std::string Function::debugPrint()
+	{
+		return std::string();
+	}
+
 
 #endif
+
 };
