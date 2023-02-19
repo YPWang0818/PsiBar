@@ -5,6 +5,9 @@ using namespace PsiBar;
 
 int main(int argc, char* argv[]) {
 
-	std::cout << "Hello phibar !" << std::endl;
+
+	// Enter interactive shell.
+
+
 	return 0;
 }

@@ -84,7 +84,7 @@ namespace PsiBar {
 	std::string Expr::debugPrint(int indentLevel) {
 
 		std::stringstream ss; int lvl = indentLevel;
-		ss << std::string(lvl, '\t');
+		ss  << std::string(lvl, '  ');
 
 		switch (tag) {
 		case ExprType::NAT:
@@ -104,15 +104,15 @@ namespace PsiBar {
 
 			break;
 		case ExprType::EXPR:
-			ss << "expr: " << debugPrintSubExpr();
+			ss << "expr: " << debugPrintSubExpr(lvl);
 
 			break;
 		case ExprType::TERM:
-			ss << "term: " << debugPrintSubExpr();
+			ss << "term: " << debugPrintSubExpr(lvl);
 
 			break;
 		case ExprType::FACTOR:
-			ss << "factor: " << debugPrintSubExpr();
+			ss << "factor: " << debugPrintSubExpr(lvl);
 
 			break;
 		};

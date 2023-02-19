@@ -112,11 +112,28 @@ namespace PsiBar {
 		size_t m_idx;
 
 
-		const size_t m_tokenBufferSz = 4;
+		const size_t m_tokenBufferSz = 10;
 		const size_t m_maxTagSz  = 128;
 		bool m_errorFlag = false;
 
 	};
+
+
+	class ParseException : public std::exception {
+	private:
+
+		std::string message;
+
+	public:
+		ParseException(const std::string& msg) : message(msg) {
+		};
+
+
+		char* what() {
+			return (char*)message.c_str();
+		}
+	};
+
 
 
 

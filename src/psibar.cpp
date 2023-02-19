@@ -49,19 +49,25 @@ namespace PsiBar {
 
 	Ref<Expr>  ExprParser::Parse(const std::string& src)
 	{
-		Reset();
 
-		m_srcView = std::string_view{ src.c_str(), src.size() };
+		try {
 
-		for (int i = 0; i < m_tokenBufferSz; i++) {
-			m_tokenBuffer.push_back(getToken());
-		};
+			Reset();
 
+			m_srcView = std::string_view{ src.c_str(), src.size() };
 
-		parseExpression();
+			for (int i = 0; i < m_tokenBufferSz; i++) {
+				m_tokenBuffer.push_back(getToken());
+			};
 
-		if (m_errorFlag) return nullptr;
-		return pop();
+			parseExpression();
+			return pop();
+		}
+		catch (ParseException e) {
+		
+			PSIBAR_ERR(e.what());
+			return nullptr;
+		}
 
 	};
 
@@ -105,6 +111,7 @@ namespace PsiBar {
 		for (;
 			( (m_idx + forward) < m_srcView.size() )	&&
 			!isspace(m_srcView[m_idx + forward])		&&
+			m_srcView[m_idx + forward] != ';'			&&
 			m_srcView[m_idx + forward] != '('			&& 
 			m_srcView[m_idx + forward] != ')'	// To avoid code such as +) registored as one token.
 			; forward++) { };
@@ -213,8 +220,8 @@ namespace PsiBar {
 			if (lookToken(2) == ":g") {
 				parseGenerator();
 
-				Ref<Expr> node = CreateRef<Expr>(ExprType::GEN);
-				createNode(node); 
+				Ref<Expr> node = pop();
+				pop(); push(node);
 				return;
 
 
@@ -235,6 +242,14 @@ namespace PsiBar {
 				nextToken(); parseExpression();  nextToken();
 				return;
 			};
+
+			if (lookToken(2) == "*" || lookToken(2) == "+") {
+
+				pop();parseExpression(); 
+				return;
+			
+			
+			}
 
 			onError("Invalid syntax.");
 
@@ -267,7 +282,7 @@ namespace PsiBar {
 	void ExprParser::parseGenerator()
 	{
 
-		if (lookToken() != "(" || lookToken(2) != "g:") {
+		if (lookToken() != "(" || lookToken(2) != ":g") {
 			onError("Invalid generator syntax.");
 			return; };  //Error 
 
@@ -350,7 +365,7 @@ namespace PsiBar {
 	void  ExprParser::parseDerFactor()
 	{
 
-		if (lookToken() != "(" || lookToken(2) != "d:") { 
+		if (lookToken() != "(" || lookToken(2) != ":d") { 
 			
 			onError("Invalid syntax for a derivation.");
 			return; 
@@ -456,8 +471,9 @@ namespace PsiBar {
 
 	bool ExprParser::isId(std::string_view token)
 	{
-		boost::regex idreg{ "[a-zA-Z_-][a-zA-Z0-9_-:]*" };
-
+		boost::regex idreg{ "[\\w][\\w\\-]*\\:?" };
+		//boost::regex idreg{ "[a-zA-Z]*" };
+		
 		return boost::regex_match(std::string{ token }, idreg);
 	};
 
@@ -466,9 +482,7 @@ namespace PsiBar {
 	{
 		if (callback) { callback(this); return; };
 
-		m_errorFlag = true;
-
-		PASIBAR_BREAK(msg);
+		throw ParseException(msg);
 
 	};
 

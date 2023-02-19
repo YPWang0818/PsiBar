@@ -55,6 +55,7 @@ namespace PsiBar {
 
 			std::fprintf(m_fileHandle, banner.c_str());
 			std::fprintf(m_fileHandle, fmt.c_str(), arg ...);
+			std::fprintf(m_fileHandle, "\n");
 
 			if (m_fileHandle == stdout || m_fileHandle == stderr) {
 				std::fprintf(m_fileHandle, "\x1b[0m");
@@ -89,7 +90,16 @@ namespace PsiBar {
 
 #endif
 
-#define PASIBAR_BREAK(...) { PSIBAR_FATAL( __VA_ARGS__) };
-#define PSIBAR_ASSERT(x, ...) {if(!x) PSIBAR_FATAL( __VA_ARGS__)};
+
+#ifdef WIN32
+	#define PSIBAR_DBGBREAK() __debugbreak()
+#else
+	// Not impelmented yet.
+#endif
+
+#define PASIBAR_BREAK(...) {  PSIBAR_FATAL( __VA_ARGS__) PSIBAR_DBGBREAK(); };
+#define PSIBAR_ASSERT(x, ...) {if(!x) { PSIBAR_FATAL( __VA_ARGS__) PSIBAR_DBGBREAK(); } };
+
+
 
 }
