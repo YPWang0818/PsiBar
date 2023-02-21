@@ -230,11 +230,14 @@ namespace PsiBar {
 			if (lookToken(2) == "(") {
 
 				if (lookToken(3) == ":d") {
-					nextToken(); while (nextToken() != "(") { parseDerFactor(); };  nextToken();
+					nextToken(); while ( lookToken() == "(" && lookToken(2) == ":d" ) { 
+						parseDerFactor(); 
+					}; 
 					parseGenerator();
-
 					Ref<Expr> node = CreateRef<Expr>(ExprType::FACTOR);
 					createNode(node); 
+
+					nextToken();
 					return;
 				};
 
@@ -367,7 +370,7 @@ namespace PsiBar {
 
 		if (lookToken() != "(" || lookToken(2) != ":d") { 
 			
-			onError("Invalid syntax for a derivation.");
+			//onError("Invalid syntax for a derivation.");
 			return; 
 		};  
 
