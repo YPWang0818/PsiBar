@@ -1,8 +1,10 @@
 #pragma once
 
-#include "src/expr.h"
-#include "src/psibar.h"
 #include "src/logger.h"
+#include "src/expr.h"
+#include "src/parser.h"
+#include "src/psibar.h"
+
 
 namespace UnitTests {
 

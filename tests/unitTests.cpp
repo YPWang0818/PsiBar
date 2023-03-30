@@ -38,7 +38,7 @@ namespace UnitTests {
 
 		for (auto src : testSrc) {
 
-			result = testParser.Parse(src);
+			result = testParser.parseInput(src);
 			if(result) PSIBAR_INFO("\n" + result->debugPrint());
 
 			PSIBAR_ASSERT(result, "Parsing Error.");

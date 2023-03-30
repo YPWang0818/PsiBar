@@ -11,10 +11,13 @@ set(libsource
     "src/psibar.h"
     "src/logger.h"
     "src/logger.cpp"
+    "src/parser.h"
+    "src/parser.cpp"
     )
 
 set(source
     ${libsource}
+    "src/main.h"
     "src/main.cpp"
 )
 

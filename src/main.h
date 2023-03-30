@@ -1,12 +1,12 @@
 #pragma once
-#include "util.h"
-#include "psibar.h"
-#include "logger.h"
 
 
 namespace PsiBar {
 
 	void printHelpMsg();
+	
+	void parseSetVarInput(const std::string& input);
+	void parseSetVarInput(const std::string& input);
 
 
 };

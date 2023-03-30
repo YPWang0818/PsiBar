@@ -1,4 +1,9 @@
+#include "util.h"
+#include "logger.h"
+#include "expr.h"
+#include "parser.h"
 #include "main.h"
+
 
 using namespace PsiBar;
 
@@ -33,11 +38,15 @@ int main(int argc, char* argv[]) {
 			if (input == ":h" || input == ":help") printHelpMsg();
 			else if (input == ":q") break;
 
+			if (input == ":set") {
+				parseSetVarInput(input);
+				continue;
+			};
 
 		};
 
-		// Parse and output the parse tree. 
-		res = inputParser.Parse(input);
+		// parseInput and output the parse tree. 
+		res = inputParser.parseInput(input);
 		if (res) PSIBAR_INFO("\n" + res->debugPrint());
 
 		//std::printf("%s\n", input.c_str());
@@ -61,4 +70,15 @@ namespace PsiBar {
 
 	};
 
+
+	void parseSetVarInput(const std::string& input) {
+
+
+
+
+
+	};
+
 };
+
+

@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "src/expr.h"
+#include "src/parser.h"
 #include "src/psibar.h"
 #include "src/logger.h"
 
