@@ -4,131 +4,6 @@
 namespace PsiBar {
 
 
-	template<typename T>
-	Parser<T>::Parser() { Reset(); }
-
-
-
-
-
-	template<typename T>
-	Ref<T> Parser<T>::pop() {
-
-		if (m_stack.empty()) return nullptr;
-
-		Ref<Expr> res = m_stack.back();
-		m_stack.pop_back();
-
-		return res;
-	}
-
-
-	template<typename T>
-	void Parser<T>::createNode(Ref<T> node)
-	{
-		if (m_stack.empty()) return;
-
-		while (m_stack.back() != nullptr) {
-
-			node->exprs.push_back(m_stack.back());
-			m_stack.pop_back();
-		};
-		pop(); push(node);
-		return;
-	}
-
-
-
-
-	template<typename T>
-	void Parser<T>::onError(std::string msg)
-	{
-		throw ParseException(msg);
-	};
-
-	template<typename T>
-	void Parser<T>::Reset()
-	{
-		m_srcView = std::string_view{ nullptr, 0 };
-		m_stack.clear();
-		m_tokenBuffer.clear();
-		m_idx = 0;
-	}
-
-
-
-	template<typename T>
-	std::string_view Parser<T>::nextToken(std::size_t count)
-	{
-		m_tokenBuffer.push_back(getToken());
-		std::string_view& res = m_tokenBuffer.front();
-		m_tokenBuffer.pop_front();
-
-		for (int c = 1; c < count; c++) {
-
-			m_tokenBuffer.push_back(getToken());
-			res = m_tokenBuffer.front();
-			m_tokenBuffer.pop_front();
-		};
-
-		return res;
-	}
-
-
-	template<typename T>
-	std::string_view Parser<T>::lookToken(std::size_t step)
-	{
-		// For effeciency, we don't check the bound here. ( Bad idea?)
-
-		return m_tokenBuffer[(step - 1)];
-	}
-
-
-	template<typename T>
-	std::string_view Parser<T>::getToken()
-	{
-		// Iterating over the spaces and comments.
-		for (; m_idx < m_srcView.size() && (isspace(m_srcView[m_idx]) || m_srcView[m_idx] == ';'); m_idx++) {
-			if (m_srcView[m_idx] == ';') while (m_idx < m_srcView.size() && m_srcView[m_idx] != '\n') {
-				m_idx++;
-			};
-		};
-
-
-		// End of file, return an empty token pointing to the end of the source.
-		if (m_idx >= m_srcView.size()) { return m_srcView.substr(m_srcView.size(), 0); };
-
-		std::string_view token;
-
-
-		// The token is the special character '(' and ')'. This is to prevent code such as "(+ " or "(variable)" to be
-		// identified as one token.
-		if (m_srcView[m_idx] == '(' || m_srcView[m_idx] == ')') {
-
-			token = m_srcView.substr(m_idx, 1); m_idx++;
-			return token;
-
-		};
-
-
-		// The iterate through the token, which is deliminated by an isspace() character.
-		size_t forward = 0;
-		for (;
-			((m_idx + forward) < m_srcView.size()) &&
-			!isspace(m_srcView[m_idx + forward]) &&
-			m_srcView[m_idx + forward] != ';' &&
-			m_srcView[m_idx + forward] != '(' &&
-			m_srcView[m_idx + forward] != ')'	// To avoid code such as +) registored as one token.
-			; forward++) {
-		};
-
-		token = m_srcView.substr(m_idx, forward);
-		m_idx += forward;
-		return token;
-	};
-
-
-
 
 	ExprParser::ExprParser()
 	{
@@ -444,7 +319,70 @@ namespace PsiBar {
 	};
 
 
+	CommandParser::CommandParser()
+	{
+	};
 
+	void CommandParser::parseFull()
+	{
+		Ref<InputCommand> command = CreateRef<InputCommand>();
+
+		if (lookToken() == ":set") {
+			if (lookToken(2) == "der")  command->type = CommandType::SETDER;
+			else if (lookToken(2) == "gen")  command->type = CommandType::SETGEN;
+
+			nextToken(2);
+		}
+		else if (lookToken() == ":help" || lookToken() == ":h") {
+			command->type = CommandType::HELP;
+			nextToken();
+		}
+		else if (lookToken() == ":local") {
+			command->type = CommandType::LOCAL;
+			nextToken();
+		}
+		else {
+			command->type = CommandType::UNDEF;
+		};
+
+		command->rest = getSrcView().substr(getPosition());
+
+		push(command);
+	}
+
+	#ifdef PSIBAR_DEBUG
+
+	std::string InputCommand::debugPrint()
+	{
+		std::stringstream ss;
+
+		switch (type) {
+		case CommandType::HELP:
+			ss << "[HELP] ";
+			break;
+		case CommandType::LOCAL:
+			ss << "[LOCAL] ";
+			break;
+		case CommandType::SETDER:
+			ss << "[SET DER] ";
+			break;
+		case CommandType::SETGEN:
+			ss << "[SET GEN] ";
+			break;
+		case CommandType::UNDEF:
+			ss << "[UNDEF] ";
+			break;
+		};
+
+		ss << "\n";
+		ss << "rest: " << std::string{rest};
+		ss << "\n";
+
+		return ss.str();
+	}
+
+
+	#endif 
 
 
 };

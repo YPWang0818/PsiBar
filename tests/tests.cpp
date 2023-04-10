@@ -7,7 +7,7 @@
 
 #include "unitTests.h"
 
-void main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
 
 
 	UnitTests::runAll(argc, argv);

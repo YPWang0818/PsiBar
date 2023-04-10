@@ -1,5 +1,5 @@
-#include "psibar.h"
 #include "logger.h"
+#include "psibar.h"
 
 
 namespace PsiBar {
@@ -45,6 +45,7 @@ namespace PsiBar {
 		
 		symbolTable = CreateRef<SymbTb>();
 		derivationTable = CreateRef<DerTb>();
+		exprParser = CreateRef<ExprParser>();
 	}
 
 

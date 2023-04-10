@@ -6,8 +6,6 @@
 namespace PsiBar {
 
 
-	
-
 	class ParseException : public std::exception {
 	private:
 
@@ -55,6 +53,16 @@ namespace PsiBar {
 
 		void onError(std::string msg);
 
+		inline std::size_t getPosition() {
+			
+			const char* end = lookToken().data();
+			const char* start = m_srcView.data();
+
+			return end - start;
+		
+		};
+
+		inline std::string_view getSrcView() { return m_srcView; };
 
 	protected:
 
@@ -62,6 +70,7 @@ namespace PsiBar {
 		boost::container::vector<Ref<T>>  m_stack;
 		boost::container::deque<std::string_view> m_tokenBuffer;
 		size_t m_idx;
+		size_t m_curPos;
 
 
 		const size_t m_tokenBufferSz = 10;
@@ -94,6 +103,128 @@ namespace PsiBar {
 	};
 
 
+	template<typename T>
+	Parser<T>::Parser() { Reset(); }
+
+	template<typename T>
+	Ref<T> Parser<T>::pop() {
+
+		if (m_stack.empty()) return nullptr;
+
+		Ref<T> res = m_stack.back();
+		m_stack.pop_back();
+
+		return res;
+	}
+
+
+	template<typename T>
+	void Parser<T>::createNode(Ref<T> node)
+	{
+		if (m_stack.empty()) return;
+
+		while (m_stack.back() != nullptr) {
+
+			node->exprs.push_back(m_stack.back());
+			m_stack.pop_back();
+		};
+		pop(); push(node);
+		return;
+	}
+
+
+
+
+	template<typename T>
+	void Parser<T>::onError(std::string msg)
+	{
+		throw ParseException(msg);
+	};
+
+	template<typename T>
+	void Parser<T>::Reset()
+	{
+		m_srcView = std::string_view{ nullptr, 0 };
+		m_stack.clear();
+		m_tokenBuffer.clear();
+		m_idx = 0;
+		m_curPos = 0;
+
+	}
+
+
+
+	template<typename T>
+	std::string_view Parser<T>::nextToken(std::size_t count)
+	{
+		m_tokenBuffer.push_back(getToken());
+		std::string_view& res = m_tokenBuffer.front();
+		m_tokenBuffer.pop_front();
+
+		for (int c = 1; c < count; c++) {
+
+			m_tokenBuffer.push_back(getToken());
+			res = m_tokenBuffer.front();
+			m_tokenBuffer.pop_front();
+		};
+
+		return res;
+	}
+
+
+	template<typename T>
+	std::string_view Parser<T>::lookToken(std::size_t step)
+	{
+		// For effeciency, we don't check the bound here. ( Bad idea?)
+
+		return m_tokenBuffer[(step - 1)];
+	}
+
+
+	template<typename T>
+	std::string_view Parser<T>::getToken()
+	{
+		// Iterating over the spaces and comments.
+		for (; m_idx < m_srcView.size() && (isspace(m_srcView[m_idx]) || m_srcView[m_idx] == ';'); m_idx++) {
+			if (m_srcView[m_idx] == ';') while (m_idx < m_srcView.size() && m_srcView[m_idx] != '\n') {
+				m_idx++;
+			};
+		};
+
+
+		// End of file, return an empty token pointing to the end of the source.
+		if (m_idx >= m_srcView.size()) { return m_srcView.substr(m_srcView.size(), 0); };
+
+		std::string_view token;
+
+
+		// The token is the special character '(' and ')'. This is to prevent code such as "(+ " or "(variable)" to be
+		// identified as one token.
+		if (m_srcView[m_idx] == '(' || m_srcView[m_idx] == ')') {
+
+			token = m_srcView.substr(m_idx, 1); m_idx++;
+			return token;
+
+		};
+
+
+		// The iterate through the token, which is deliminated by an isspace() character.
+		size_t forward = 0;
+		for (;
+			((m_idx + forward) < m_srcView.size()) &&
+			!isspace(m_srcView[m_idx + forward]) &&
+			m_srcView[m_idx + forward] != ';' &&
+			m_srcView[m_idx + forward] != '(' &&
+			m_srcView[m_idx + forward] != ')'	// To avoid code such as +) registored as one token.
+			; forward++) {
+		};
+
+		token = m_srcView.substr(m_idx, forward);
+		m_idx += forward;
+		return token;
+	};
+
+
 
 
 	class ExprParser :public  Parser<Expr> {
@@ -123,5 +254,42 @@ namespace PsiBar {
 		// These function impelments a token stream from the source, which will be consumed by the recursive decent parser.
 
 	};
+
+	enum class CommandType {
+		UNDEF,
+		HELP,
+		SETGEN, // Defining a new generator    
+		SETDER, // Defining a new derivation.  
+		LOCAL   // List local variables.
+	};
+
+
+	struct InputCommand {
+
+		CommandType type = CommandType::UNDEF;
+		boost::container::vector<std::string> arguments;
+		std::string_view rest;   // The unparsed part of the input.
+
+		#ifdef PSIBAR_DEBUG
+		std::string debugPrint();
+		#endif 
+	};
+
+
+
+	class CommandParser : public Parser<InputCommand> {
+
+	public:
+		CommandParser();
+
+	private:
+
+		void parseFull() override;
+
+	};
+
+
+
+
 
 }

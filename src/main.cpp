@@ -1,7 +1,5 @@
 #include "util.h"
 #include "logger.h"
-#include "expr.h"
-#include "parser.h"
 #include "main.h"
 
 
@@ -22,8 +20,10 @@ int main(int argc, char* argv[]) {
 	std::printf("Interative mode: enter :h or :help for more help. \n");
 
 	ExprParser inputParser;
-	Ref<Expr> res = nullptr;
+	CommandParser commandParser;
 
+	Ref<Expr> res = nullptr;
+	Ref<InputCommand> cmd = nullptr;
 
 	while (true) {
 
@@ -32,24 +32,39 @@ int main(int argc, char* argv[]) {
 		std::getline(std::cin, input);
 
 
-
 		// Parsing interative mode options.
 		if (input[0] == ':') {
-			if (input == ":h" || input == ":help") printHelpMsg();
-			else if (input == ":q") break;
+			cmd = commandParser.parseInput(input);
+			PSIBAR_INFO("\n" + cmd->debugPrint());
 
-			if (input == ":set") {
-				parseSetVarInput(input);
-				continue;
+			switch (cmd->type) {
+			case CommandType::HELP:
+				printHelpMsg();
+				break;
+			case CommandType::LOCAL:
+				break;
+			case CommandType::SETDER:
+			case CommandType::SETGEN:
+				parseSetVarInput(cmd);
+
+				break;
+			case CommandType::UNDEF:
+				PSIBAR_ERR("\n Undefined command.");
+				printHelpMsg();
+				break;
 			};
+
+
+			continue;
 
 		};
 
-		// parseInput and output the parse tree. 
+	
+		//parseInput and output the parse tree. 
 		res = inputParser.parseInput(input);
 		if (res) PSIBAR_INFO("\n" + res->debugPrint());
 
-		//std::printf("%s\n", input.c_str());
+		std::printf("%s\n", input.c_str());
 
 		count++;
 
@@ -68,16 +83,13 @@ namespace PsiBar {
 		std::printf("\t :h  Print help message. \n");
 		std::printf("\t :q  Quit interactive mode. \n");
 
+	}
+
+	void parseSetVarInput(const Ref<InputCommand>& cmd)
+	{
 	};
 
 
-	void parseSetVarInput(const std::string& input) {
-
-
-
-
-
-	};
 
 };
 

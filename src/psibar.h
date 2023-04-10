@@ -1,6 +1,7 @@
 #pragma once
 #include "util.h"
 #include "expr.h"
+#include "parser.h"
 
 namespace PsiBar {
 
@@ -21,9 +22,12 @@ namespace PsiBar {
 
 		Ref<SymbTb> symbolTable;
 		Ref<DerTb> derivationTable;
+		Ref<ExprParser> exprParser;
+
 
 	private:
 		GlobalContext();
+		
 
 	};
 
