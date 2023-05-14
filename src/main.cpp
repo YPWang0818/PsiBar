@@ -68,8 +68,6 @@ int main(int argc, char* argv[]) {
 
 		count++;
 
-
-
 	}
 
 	return 0;
@@ -87,6 +85,9 @@ namespace PsiBar {
 
 	void parseSetVarInput(const Ref<InputCommand>& cmd)
 	{
+		DerivationParser derivationParser;
+		Ref<Derivation> der = derivationParser.parseInput(cmd->rest);
+		if (der) PSIBAR_INFO("\n" + der->debugPrint());
 	};
 
 

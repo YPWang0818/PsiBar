@@ -5,7 +5,7 @@
 namespace PsiBar {
 
 
-	
+	/*
 	int defineNewSymbol(const std::string& name, Ref<Symbol>* symb, Parity parity, bool scalar)
 	{
 
@@ -23,6 +23,7 @@ namespace PsiBar {
 
 		return _OK;
 	}
+	*/
 
 	int defineNewDerivation(const std::string& name, Ref<Derivation>* der)
 	{

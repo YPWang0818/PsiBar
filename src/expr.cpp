@@ -64,12 +64,18 @@ namespace PsiBar {
 
 		std::stringstream ss;
 
-		ss << "[DERIVATION] " << this->getName() << ":\n";
+		ss << "[DERIVATION] " << this->getName() << " : \n";
+
+		ss << "Has suffix: " << (this->hasSuffix() ? "true" : "false") << "\n";
+
+		if (this->hasSuffix() && (this->getSuffix() != nullptr)) {
+			ss << "Suffix: \n" << this->getSuffix()->debugPrint();
+		};
 	
 		return ss.str();
 	};
 
-
+/*
 	std::string Symbol::debugPrint()
 	{
 		std::stringstream ss;
@@ -79,6 +85,7 @@ namespace PsiBar {
 
 		return ss.str();
 	};
+*/
 
 
 	std::string Expr::debugPrint(int indentLevel) {
@@ -131,10 +138,12 @@ namespace PsiBar {
 		return ss.str();
 	};
 
+/*
 	std::string Function::debugPrint()
 	{
 		return std::string();
 	}
+*/
 
 
 #endif

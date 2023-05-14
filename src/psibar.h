@@ -5,7 +5,7 @@
 
 namespace PsiBar {
 
-	using SymbTb = std::unordered_map<std::string, Ref<Symbol>>;
+	using SymbTb = std::unordered_map<std::string, Ref<Generator>>;
 	using DerTb = std::unordered_map<std::string, Ref<Derivation>>;
 
 	class GlobalContext {
@@ -38,12 +38,13 @@ namespace PsiBar {
 
 	void init();
 
+/*
 	int defineNewSymbol(
 		const std::string& name,
 		Ref<Symbol>* symb = NULL,
 		Parity parity = Parity::NONE,
 		bool scalar = false);
-
+*/
 
 
 	int defineNewDerivation(

@@ -64,6 +64,11 @@ namespace PsiBar {
 
 		inline std::string_view getSrcView() { return m_srcView; };
 
+
+		bool isNat(std::string_view token, int64_t* value = nullptr);
+		bool isReal(std::string_view token, double* value = nullptr);
+		bool isId(std::string_view token);
+
 	protected:
 
 		std::string_view m_srcView;
@@ -224,6 +229,49 @@ namespace PsiBar {
 		return token;
 	};
 
+	template<typename T>
+	bool Parser<T>::isId(std::string_view token)
+	{
+		boost::regex idreg{ "[\\w][\\w\\-]*\\:?" };
+		//boost::regex idreg{ "[a-zA-Z]*" };
+
+		return boost::regex_match(std::string{ token }, idreg);
+	};
+
+
+	template<typename T>
+	bool Parser<T>::isNat(std::string_view token, int64_t* value)
+	{
+
+
+		// Should use regular expression in future when dealing with arbitrary percision integers. 
+
+		int64_t result, i;
+		std::sscanf(std::string{ token }.c_str(), "%lli%lln", &result, &i);
+
+		// Only match if scanf consumes the whole token.
+		if (i != token.size()) { return false; };
+
+		*value = result;
+		return true;
+	};
+
+	template<typename T>
+	bool Parser<T>::isReal(std::string_view token, double* value)
+	{
+
+		int64_t i; double result;
+
+		std::sscanf(std::string{ token }.c_str(), "%lg%lln", &result, &i);
+
+
+		if (i != token.size()) { return false; };
+
+		*value = result;
+		return true;
+
+	};
+
 
 
 
@@ -243,13 +291,10 @@ namespace PsiBar {
 		void parseGenerator();
 		void parseDerFactor();
 
-		bool isNat(std::string_view token, int64_t* value = nullptr);
-		bool isReal(std::string_view token, double* value = nullptr);
-		bool isId(std::string_view token);
 
 
 		// This function will push the expression parsed directly into the argument slot of gen. 
-		void parseGenProp(Ref<Function> gen);
+		void parseGenProp(Ref<Generator> gen);
 
 		// These function impelments a token stream from the source, which will be consumed by the recursive decent parser.
 
@@ -276,15 +321,31 @@ namespace PsiBar {
 	};
 
 
-
 	class CommandParser : public Parser<InputCommand> {
 
 	public:
-		CommandParser();
-
+		CommandParser() {};
 	private:
-
 		void parseFull() override;
+	};
+
+
+	class DerivationParser : public Parser<Derivation> {
+
+	public:
+		DerivationParser() {};
+	private:
+		void parseFull() override;
+
+	};
+
+	class GeneratorParser : public Parser<Generator> {
+	public:
+		GeneratorParser() {};
+	private:
+		void parseFull() override;
+		void parseGenProp(Ref<Generator> gen);
+		void parsePType(Ref<Generator> gen);
 
 	};
 

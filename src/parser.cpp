@@ -177,7 +177,7 @@ namespace PsiBar {
 		// If the generator is a symbol.
 		if (lookToken() == ")") {
 			nextToken();
-			Ref<Symbol> gen = CreateRef<Symbol>(gentoken);
+			Ref<Generator> gen = CreateRef<Generator>(gentoken);
 			Ref<Expr> genexpr = CreateRef<Expr>(gen);
 			push(genexpr);
 
@@ -187,7 +187,7 @@ namespace PsiBar {
 
 		//Otherwise the generator is a function.
 
-		Ref<Function> gen = CreateRef<Function>(gentoken);
+		Ref<Generator> gen = CreateRef<Generator>(gentoken);
 		while (lookToken() != ")") {
 			parseGenProp(gen);
 		} nextToken();
@@ -198,7 +198,7 @@ namespace PsiBar {
 	};
 
 
-	void ExprParser::parseGenProp(Ref<Function> gen)
+	void ExprParser::parseGenProp(Ref<Generator> gen)
 	{
 		if (lookToken() != "(") {
 
@@ -277,51 +277,73 @@ namespace PsiBar {
 
 
 
-	bool ExprParser::isNat(std::string_view token, int64_t* value)
+	void DerivationParser::parseFull()
 	{
 
+		if (!isId(lookToken())) {
 
-		// Should use regular expression in future when dealing with arbitrary percision integers. 
+			onError("Invalid Derivation name.");
+			return; //Error.
+		};
 
-		int64_t result, i;
-		std::sscanf(std::string{ token }.c_str(), "%lli%lln", &result, &i);
+		std::string_view derName = nextToken();
 
-		// Only match if scanf consumes the whole token.
-		if (i != token.size()) { return false; };
+		Ref<Derivation> derivation = CreateRef<Derivation>(derName);
 
-		*value = result;
-		return true;
-	};
+		if (lookToken() == ":suffix") {
+			nextToken();
+			derivation->setHasSuffix(true);
+		};
 
+		push(derivation);
 
-	bool ExprParser::isReal(std::string_view token, double* value)
-	{
-
-		int64_t i; double result;
-
-		std::sscanf(std::string{ token }.c_str(), "%lg%lln", &result, &i);
-
-
-		if (i != token.size()) { return false; };
-
-		*value = result;
-		return true;
 
 	};
 
 
-	bool ExprParser::isId(std::string_view token)
+	void GeneratorParser::parseFull()
 	{
-		boost::regex idreg{ "[\\w][\\w\\-]*\\:?" };
-		//boost::regex idreg{ "[a-zA-Z]*" };
 
-		return boost::regex_match(std::string{ token }, idreg);
-	};
+		if (!isId(lookToken())) {
+
+			onError("Invalid Generator name.");
+			return; //Error.
+		};
+
+		std::string_view genName = nextToken();
+		Ref<Generator> generator = CreateRef<Generator>(genName);
+		
+		if (lookToken() == "(") {
+			if (lookToken(2) == ":prop") {
+				parseGenProp(generator);
+			}
+			else if (lookToken(2) == ":parity") {
+				parsePType(generator);
+			};
+
+			onError("Invaild generator properties.");
+		};
+
+		if (lookToken() == ":scalar") {
+			generator->setIsScalar(true);
+			nextToken();
+		};
 
 
-	CommandParser::CommandParser()
+
+	}
+
+	void GeneratorParser::parseGenProp(Ref<Generator> gen)
 	{
-	};
+		nextToken(2);
+
+
+	}
+
+	void GeneratorParser::parsePType(Ref<Generator> gen)
+	{
+
+	}
 
 	void CommandParser::parseFull()
 	{
@@ -350,7 +372,10 @@ namespace PsiBar {
 		push(command);
 	}
 
-	#ifdef PSIBAR_DEBUG
+
+
+
+#ifdef PSIBAR_DEBUG
 
 	std::string InputCommand::debugPrint()
 	{
@@ -375,7 +400,7 @@ namespace PsiBar {
 		};
 
 		ss << "\n";
-		ss << "rest: " << std::string{rest};
+		ss << "rest: " << std::string{ rest };
 		ss << "\n";
 
 		return ss.str();
@@ -383,6 +408,8 @@ namespace PsiBar {
 
 
 	#endif 
+
+
 
 
 };

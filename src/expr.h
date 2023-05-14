@@ -4,20 +4,36 @@
 
 namespace PsiBar {
 
+	struct Expr;
+
 	class Derivation {
 
 	public:
 
 		Derivation(const std::string& name)
-			:m_ID{ name } 
+			:m_ID{ name }, m_suffix{ nullptr }, m_hasSuffix{false}
 		{};
 		
 		Derivation(const std::string_view name)
-			:m_ID {name}
+			:m_ID{ name }, m_suffix{nullptr}, m_hasSuffix{ false }
 		{
 		};
 
 		inline std::string getName() { return m_ID; };
+
+		inline void setHasSuffix(bool t) { m_hasSuffix = t; };
+		inline bool hasSuffix() { return m_hasSuffix; };
+
+		inline void setSuffix(Ref<Expr> expr) {
+			if(m_hasSuffix) m_suffix = expr;
+		}
+
+		inline Ref<Expr> getSuffix() {
+			return m_suffix;
+		}
+
+
+
 
 #ifdef PSIBAR_DEBUG
 		std::string debugPrint();
@@ -25,6 +41,8 @@ namespace PsiBar {
 	
 	private:
 
+		Ref<Expr> m_suffix;
+		bool m_hasSuffix;
 		std::string m_ID;
 	};
 
@@ -38,8 +56,8 @@ namespace PsiBar {
 
 
 
-
-
+	struct Expr;
+	typedef std::unordered_map<std::string, Ref<Expr> > ArgsTb;
 
 	class Generator {
 
@@ -63,6 +81,12 @@ namespace PsiBar {
 
 		inline DerTable getActingDerivations() { return m_actedDerList; };
 
+		inline bool haveTag(std::string_view tag) {
+			return (m_args.find(std::string{ tag }) == m_args.end()) ? false : true;
+		};
+
+		inline ArgsTb args() { return m_args; };
+
 
 #ifdef PSIBAR_DEBUG
 		virtual std::string debugPrint();
@@ -79,14 +103,12 @@ namespace PsiBar {
 
 		Parity m_parity = Parity::NONE;
 		DerTable m_actedDerList;
+		ArgsTb m_args;
 
 
 	};
 
-
-
-
-
+/*
 	class Symbol :public Generator {
 
 	public:
@@ -108,10 +130,9 @@ namespace PsiBar {
 		//PropTable m_symbProp;
 	};
 
+*/
 
-	struct Expr;
-	typedef std::unordered_map<std::string, Ref<Expr> > ArgsTb;
-
+/*
 	class Function : public Generator {
 
 
@@ -143,15 +164,13 @@ namespace PsiBar {
 
 	};
 
-
-
+*/
 
 
 	enum  ExprType {
 		NAT,
 		REAL,
 		GEN,
-		//DER,
 		DERFACTOR,
 		EXPR,
 		TERM,
