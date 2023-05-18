@@ -5,26 +5,6 @@
 namespace PsiBar {
 
 
-	/*
-	int defineNewSymbol(const std::string& name, Ref<Symbol>* symb, Parity parity, bool scalar)
-	{
-
-		if (GET_SYMTB()->find(name) != GET_SYMTB()->end()) {
-			return W_RESOURCE_DUPICATE;
-		};
-
-		Ref<Symbol> syb = CreateRef<Symbol>(name);
-
-		syb->setIsScalar(scalar);
-		syb->setPairy(parity);
-
-		if (symb) *symb = syb;
-		(*GET_SYMTB())[name] = syb;
-
-		return _OK;
-	}
-	*/
-
 	int defineNewDerivation(const std::string& name, Ref<Derivation>* der)
 	{
 

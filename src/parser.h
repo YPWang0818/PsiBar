@@ -259,11 +259,9 @@ namespace PsiBar {
 	template<typename T>
 	bool Parser<T>::isReal(std::string_view token, double* value)
 	{
-
 		int64_t i; double result;
 
 		std::sscanf(std::string{ token }.c_str(), "%lg%lln", &result, &i);
-
 
 		if (i != token.size()) { return false; };
 

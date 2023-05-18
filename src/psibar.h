@@ -38,13 +38,6 @@ namespace PsiBar {
 
 	void init();
 
-/*
-	int defineNewSymbol(
-		const std::string& name,
-		Ref<Symbol>* symb = NULL,
-		Parity parity = Parity::NONE,
-		bool scalar = false);
-*/
 
 
 	int defineNewDerivation(

@@ -4,43 +4,29 @@
 namespace PsiBar {
 
 	
-
-	int Generator::addDerivation(Ref<Derivation> der)
+	std::string Generator::setArg(const std::string& arg, Ref<Expr> init)
 	{
-		if (m_actedDerList.find(der->getName()) == m_actedDerList.end()) {
-			return W_RESOURCE_DUPICATE;
-		}
+		m_args[arg] = init;
+		return arg;
+	}
 
-		m_actedDerList[der->getName()] = der;
-		return _OK;
-	};
+	Ref<Expr> Generator::getArg(const std::string& arg){
 
-	int Generator::delDerivation(const std::string& name)
-	{
-		m_actedDerList.erase(name);
+		auto res = m_args.find(arg);
 
-		return _OK;
-	};
+		if (res != m_args.end()) {
+			return res->second;
+		} 
+		return nullptr;
+	}
 
-
-	bool Generator::isActingDerivation(const std::string& name)
-	{
-		if (m_actedDerList.find(name) == m_actedDerList.end()) {
-			return false;
-		};
-
-		return true;
-	};
 
 
 #ifdef PSIBAR_DEBUG
 
-	std::string Generator::debugPrint()
-	{
-		return debugPrintBase();
-	}
+	
 
-	std::string Generator::debugPrintBase()
+	std::string Generator::debugPrint()
 	{
 
 		std::stringstream ss;
@@ -48,15 +34,17 @@ namespace PsiBar {
 		ss << "Parity: " << std::to_string((int)m_parity) << "\n";
 		ss << "Is scalar: " << std::to_string(m_isScalar) << "\n";
 
-		ss << "Acted derivation List: ";
-
-		for (auto d : m_actedDerList) {
-			ss << d.first << ",";
+		ss << "Generator properties: \n";
+		
+		for (auto d : m_args) {
+			ss << d.first << " , " <<  (d.second == nullptr ? "nil" : d.second->debugPrint()) << "\n";
 		};
+
 		ss << "\n";
 
 		return ss.str();
 	};
+
 
 
 	std::string Derivation::debugPrint()
@@ -74,18 +62,6 @@ namespace PsiBar {
 	
 		return ss.str();
 	};
-
-/*
-	std::string Symbol::debugPrint()
-	{
-		std::stringstream ss;
-
-		ss << "[SYMBOL] " << this->getName() << ":\n";
-		ss << this->debugPrintBase();
-
-		return ss.str();
-	};
-*/
 
 
 	std::string Expr::debugPrint(int indentLevel) {
@@ -138,12 +114,7 @@ namespace PsiBar {
 		return ss.str();
 	};
 
-/*
-	std::string Function::debugPrint()
-	{
-		return std::string();
-	}
-*/
+
 
 
 #endif

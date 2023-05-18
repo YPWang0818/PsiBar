@@ -217,7 +217,7 @@ namespace PsiBar {
 
 		std::string_view genproptk = nextToken();
 
-		if (!(gen->haveTag(lookToken()))) {
+		if (!(gen->haveArg(lookToken()))) {
 
 
 			onError("Generator properties dosn't exists.");
@@ -227,7 +227,7 @@ namespace PsiBar {
 
 		parseExpression();
 		// Get the experssion just parsed and set it as  the value correspond to the argument.
-		gen->args()[std::string{ nextToken() }] = pop();
+		gen->setArg(std::string{ nextToken() }, pop());
 
 		nextToken();
 
@@ -313,22 +313,30 @@ namespace PsiBar {
 		std::string_view genName = nextToken();
 		Ref<Generator> generator = CreateRef<Generator>(genName);
 		
-		if (lookToken() == "(") {
-			if (lookToken(2) == ":prop") {
-				parseGenProp(generator);
+		
+		while (lookToken() != "") {
+			if (lookToken() == "(") {
+
+				if (lookToken(2) == ":prop") {
+					parseGenProp(generator);
+				}
+				else if (lookToken(2) == ":parity") {
+					parsePType(generator);
+				}
+				else {
+					onError("Invaild generator.");
+				};
+
+			} else if (lookToken() == ":scalar") {
+				generator->setIsScalar(true);
+				nextToken();
 			}
-			else if (lookToken(2) == ":parity") {
-				parsePType(generator);
+			else {
+				onError("Invaild generator.");
 			};
-
-			onError("Invaild generator properties.");
 		};
 
-		if (lookToken() == ":scalar") {
-			generator->setIsScalar(true);
-			nextToken();
-		};
-
+		push(generator);
 
 
 	}
@@ -337,11 +345,47 @@ namespace PsiBar {
 	{
 		nextToken(2);
 
+		while (lookToken() != ")") {
+			if (!isId(lookToken())) {
+
+				onError("Invalid Generator Properties name.");
+				return;
+			};
+
+			std::string_view genprop = nextToken();
+			gen->setArg(std::string{ genprop });
+		};
+
+		nextToken();
 
 	}
 
 	void GeneratorParser::parsePType(Ref<Generator> gen)
 	{
+		nextToken(2);
+
+
+		boost::regex evenReg { "([Ee]ven|EVEN|1)" };
+		boost::regex oddReg{ "([Oo]dd|ODD|-1)" };
+		boost::regex noneReg{ "([Nn]one|NONE|0)" };
+
+
+		std::string_view type = lookToken();
+		
+		if (boost::regex_match(std::string{ type }, evenReg)) {
+			gen->setPairy(Parity::EVEN);
+		}
+		else if (boost::regex_match(std::string{ type }, oddReg)) {
+			gen->setPairy(Parity::ODD);
+		}
+		else if (boost::regex_match(std::string{ type }, noneReg)) {
+			gen->setPairy(Parity::NONE);
+		}
+		else {
+			onError("Unrecognized parity type.");
+		};
+
+		nextToken(2);
 
 	}
 
@@ -371,8 +415,6 @@ namespace PsiBar {
 
 		push(command);
 	}
-
-
 
 
 #ifdef PSIBAR_DEBUG

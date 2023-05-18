@@ -85,9 +85,20 @@ namespace PsiBar {
 
 	void parseSetVarInput(const Ref<InputCommand>& cmd)
 	{
-		DerivationParser derivationParser;
-		Ref<Derivation> der = derivationParser.parseInput(cmd->rest);
-		if (der) PSIBAR_INFO("\n" + der->debugPrint());
+
+		if (cmd->type == CommandType::SETDER) {
+			DerivationParser derivationParser;
+			Ref<Derivation> der = derivationParser.parseInput(cmd->rest);
+			if (der) PSIBAR_INFO("\n" + der->debugPrint());
+		};
+
+		if (cmd->type == CommandType::SETGEN) {
+			GeneratorParser generatorParser;
+			Ref<Generator> gen = generatorParser.parseInput(cmd->rest);
+			if (gen) PSIBAR_INFO("\n" + gen->debugPrint());	
+		}
+
+	
 	};
 
 

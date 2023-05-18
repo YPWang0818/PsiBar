@@ -75,23 +75,20 @@ namespace PsiBar {
 		inline void setPairy(Parity parity) { m_parity = parity; };
 		inline void	setIsScalar(bool isScalar) { m_isScalar = isScalar;  };
 		
-		int addDerivation(Ref<Derivation> der);
-		int delDerivation(const std::string& name);
-		bool isActingDerivation(const std::string& name);
-
-		inline DerTable getActingDerivations() { return m_actedDerList; };
-
-		inline bool haveTag(std::string_view tag) {
-			return (m_args.find(std::string{ tag }) == m_args.end()) ? false : true;
+		inline bool haveArg(std::string_view arg) {
+			return (m_args.find(std::string{ arg }) == m_args.end()) ? false : true;
 		};
 
-		inline ArgsTb args() { return m_args; };
+		std::string setArg(const std::string& arg, Ref<Expr> = nullptr);
+		Ref<Expr> getArg(const std::string& arg);
+
+
+
+		//inline ArgsTb args() { return m_args; };
 
 
 #ifdef PSIBAR_DEBUG
-		virtual std::string debugPrint();
-	protected:
-		std::string debugPrintBase();
+		std::string debugPrint();
 #endif 
 
 
@@ -100,72 +97,11 @@ namespace PsiBar {
 
 		/* If the generator is a scalar, then It can be passed through any derivation. */
 		bool m_isScalar = false;
-
 		Parity m_parity = Parity::NONE;
-		DerTable m_actedDerList;
 		ArgsTb m_args;
 
 
 	};
-
-/*
-	class Symbol :public Generator {
-
-	public:
-
-		Symbol(const std::string& name)
-			: Generator{ name }
-		{};
-
-		Symbol(std::string_view name)
-			: Generator{ name }
-		{};
-
-
-#ifdef PSIBAR_DEBUG
-		 std::string debugPrint() override;
-#endif 
-
-	private:
-		//PropTable m_symbProp;
-	};
-
-*/
-
-/*
-	class Function : public Generator {
-
-
-	public:
-		Function(const std::string& name)
-			: Generator{ name }
-		{};
-
-		Function(std::string_view name)
-			: Generator{ name }
-		{};
-
-
-		inline bool haveTag(std::string_view tag) { 
-
-			// Copying the string_view to string, not ideal...
-			 return (m_args.find(std::string{ tag }) ==  m_args.end() )? false: true;
-		};
-
-		inline ArgsTb args() { return m_args; };
-	
-
-#ifdef PSIBAR_DEBUG
-		std::string debugPrint() override;
-#endif 
-
-	private:
-		ArgsTb m_args;
-
-	};
-
-*/
-
 
 	enum  ExprType {
 		NAT,
