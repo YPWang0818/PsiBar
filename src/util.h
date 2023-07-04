@@ -12,6 +12,7 @@
 #include <cctype>
 #include <cstdint>
 #include <exception>
+#include <format>
 
 
 #include "boost/unordered_map.hpp"
@@ -46,12 +47,48 @@ namespace PsiBar {
 	};
 
 
-	enum Errocode {
-		_OK = 0,
-		E_MISUSE,
-		E_RESOURCE_NOT_FOUND,
-		W_RESOURCE_DUPICATE
+	enum ErrorCode {
+		OK = 0,
+		TRACE,
+		WARN,
+		ERROR,
+		CRITICAL
 	};
+
+	class Error {
+	public:
+
+		template<typename ... Args>
+		Error(ErrorCode errcode, std::string msg, Args ... args)
+			:m_code{ errcode }
+		{
+			std::stringstream ss;
+			ss << std::vformat(msg, std::make_format_args(args...));
+			m_msg = ss.str();
+		};
+	
+
+		Error(std::string msg)
+			: m_msg{ msg }, m_code{ERROR}
+		{};
+
+		Error()
+			: m_msg{}, m_code{OK}
+		{}
+
+		inline int code() { return m_code; }
+		inline std::string msg() { return m_msg; };
+
+	private:
+
+		std::string m_msg;
+		ErrorCode m_code;
+	};
+
+
+	
+
+
 
 	
 

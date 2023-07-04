@@ -29,7 +29,8 @@ namespace PsiBar {
 
 		Parser();
 
-		Ref<T> parseInput(std::string_view src);
+		Error parseInput(std::string_view src, Ref<T>& res);
+
 		void Reset();
 
 
@@ -85,7 +86,7 @@ namespace PsiBar {
 	};
 
 	template<typename T>
-	Ref<T> Parser<T>::parseInput(std::string_view src) {
+		Error Parser<T>::parseInput(std::string_view src, Ref<T>& res) {
 
 		try {
 
@@ -98,13 +99,16 @@ namespace PsiBar {
 			};
 
 			parseFull();
-			return pop();
+			res = pop();
+
+			return Error{};
 		}
 		catch (ParseException e) {
 
-			PSIBAR_ERR(e.what());
-			return nullptr;
-		}
+			//PSIBAR_ERR(e.what());
+			return Error{e.what()};
+		};
+
 	};
 
 

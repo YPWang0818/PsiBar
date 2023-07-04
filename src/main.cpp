@@ -2,6 +2,10 @@
 #include "logger.h"
 #include "main.h"
 
+// TODO: Better Error handling and reporting for the parser and the program in general.
+// TODO: Refactor to seperate the cli code and the program logic code.
+
+
 
 using namespace PsiBar;
 
@@ -34,7 +38,12 @@ int main(int argc, char* argv[]) {
 
 		// Parsing interative mode options.
 		if (input[0] == ':') {
-			cmd = commandParser.parseInput(input);
+			Error e = commandParser.parseInput(input, cmd);
+			if (e.code() > ErrorCode::WARN) {
+				PSIBAR_BREAK(e.msg());
+			}
+
+
 			PSIBAR_INFO("\n" + cmd->debugPrint());
 
 			switch (cmd->type) {
@@ -61,7 +70,12 @@ int main(int argc, char* argv[]) {
 
 	
 		//parseInput and output the parse tree. 
-		res = inputParser.parseInput(input);
+		Error e = inputParser.parseInput(input, res);
+
+		if (e.code() > ErrorCode::WARN) {
+			PSIBAR_DBGBREAK(e.msg());
+		}
+
 		if (res) PSIBAR_INFO("\n" + res->debugPrint());
 
 		std::printf("%s\n", input.c_str());
@@ -88,13 +102,28 @@ namespace PsiBar {
 
 		if (cmd->type == CommandType::SETDER) {
 			DerivationParser derivationParser;
-			Ref<Derivation> der = derivationParser.parseInput(cmd->rest);
+			Ref<Derivation> der = nullptr;
+
+			Error e = derivationParser.parseInput(cmd->rest, der);
+
+			if (e.code() > (int)ErrorCode::WARN) {
+				PSIBAR_BREAK(e.msg())
+			}
+
 			if (der) PSIBAR_INFO("\n" + der->debugPrint());
 		};
 
 		if (cmd->type == CommandType::SETGEN) {
 			GeneratorParser generatorParser;
-			Ref<Generator> gen = generatorParser.parseInput(cmd->rest);
+			Ref<Generator> gen = nullptr;
+
+			Error e = generatorParser.parseInput(cmd->rest, gen);
+
+		 
+			if (e.code() > ErrorCode::WARN) {
+				PSIBAR_BREAK(e.msg())
+			}
+
 			if (gen) PSIBAR_INFO("\n" + gen->debugPrint());	
 		}
 

@@ -97,7 +97,7 @@ namespace PsiBar {
 	// Not impelmented yet.
 #endif
 
-#define PASIBAR_BREAK(...) {  PSIBAR_FATAL( __VA_ARGS__) PSIBAR_DBGBREAK(); };
+#define PSIBAR_BREAK(...) {  PSIBAR_FATAL( __VA_ARGS__) PSIBAR_DBGBREAK(); };
 #define PSIBAR_ASSERT(x, ...) {if(!x) { PSIBAR_FATAL( __VA_ARGS__) PSIBAR_DBGBREAK(); } };
 
 
